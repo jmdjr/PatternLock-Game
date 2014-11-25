@@ -99,7 +99,20 @@
             var defaults = {
                 columns: 3,
                 rows: 3,
-                minimumSolution: 3
+                minimumSolution: 3,
+                directions: [
+                    { x: 0, y: -1 },    //north
+                    { x: 0, y: 1 },     //south
+                    { x: 1, y: 0 },     //east
+                    { x: -1, y: 0 }     //west
+                ],
+                compass: {
+                    north: 0,
+                    south: 1,
+                    east: 2,
+                    west: 3
+                }
+
             }
 
 
@@ -141,45 +154,94 @@
                 this.solutionList.push({x:startX, y:startY});
 
                 var i = 1;
-                while (i < snodes) {
-                    var nextX = (Math.random() > 0.5) ? 1 : -1;
-                    var nextY = (Math.random() > 0.5) ? 1 : -1;
 
-                    if (this.addSolutionNode(nextX, nextY)) {
-                        ++i;
-                    }
+                var firstNode = this.solutionList[0];
+                var lastNode = this._getRandomNextNode();
+
+                while (i < snodes || firstNode == lastNode) {
+                    this.solutionList.push(lastNode);
+                    lastNode = this._getRandomNextNode();
+                    ++i;
                 }
 
                 debugger;
             };
 
-            p._testNode = function (nodeA, nodeB) {
+            p._sameNode = function (nodeA, nodeB) {
                 return nodeA.x == nodeB.x && nodeA.y == nodeB.y;
             }
+            
+            p._nodeIsInBounds = function (node) {
+                return !(node.x >= this.defaults.columns || node.x < 0
+                    || node.y >= this.defaults.rows || node.y < 0);
+            }
 
-            p.addSolutionNode = function (nextX, nextY) {
-                var end = this.solutionList.length;
-                var last = this.solutionList[end-1];
-                var newNode = {x: last.x + nextX, y: last.y + nextY};
+            p._addNodes = function (nodeA, nodeB) {
+                return { x: nodeA.x + nodeB.x, y: nodeA.y + nodeB.y };
+            }
 
-                var test = true;
+            p._possibleNodes = function (node) {
+                var possibleNodes = [];
+                //manually look in all directions.
+                var d = this.defaults.directions, c = this.defaults.compass;
+
+                var newNode = this._addNodes(node, d[c.north]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(node, d[c.south]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(node, d[c.east]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(node, d[c.west]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.north]), d[c.east]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.north]), d[c.west]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.south]), d[c.east]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.south]), d[c.west]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                return possibleNodes.slice(0);
+            }
+
+            p._getRandomNextNode = function () {
+
+                var currentNode = this.solutionList[this.solutionList.length - 1];
+                var possibleNodes = this._possibleNodes(currentNode);
+                var nextNode = null;
                 var game = this;
 
-                $.each(this.solutionList, function(index, item){
-                    test = test && !game._testNode(item, newNode);   
-                });
+                var pnodeIndex = Math.floor(Math.random() * possibleNodes.length);
+                var pnode = possibleNodes[pnodeIndex];
 
-                if (!test) {
-                    return false;
+                while(nextNode == null) {
+                    for (var solutionIndex = 0; solutionIndex < this.solutionList.length; ++solutionIndex) {
+                        var snode = this.solutionList[solutionIndex];
+                        if (this._sameNode(snode, pnode)) {
+
+                            if (possibleNodes.length == 1) {
+                                nextNode = this.solutionList[0];
+                                debugger;
+                            }
+                            else {
+                                possibleNodes.splice(pnodeIndex, 1);
+                            }
+                        }
+                        else {
+                            nextNode = pnode;
+                        }
+                    }
                 }
 
-                if (newNode.x >= this.defaults.columns || newNode.x < 0
-                    || newNode.y >= this.defaults.rows || newNode.y < 0) {
-                    return false;
-                }
-
-                this.solutionList.push(newNode);
-                return true;
+                return nextNode;
             }
 
             $.fn.PatternLockGame = function (options) {
