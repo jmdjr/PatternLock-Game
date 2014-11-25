@@ -2,6 +2,62 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <style>
+        body {
+            margin: 10px;
+            padding: 0px;
+        }
+
+        .game-frame {
+            position: relative;
+            background-color: gray;
+            padding-bottom: 50px;
+            width: 400px;
+            float:left;
+        }
+
+        .game-board {
+            height: 447px;
+            width: 479px;
+            overflow:hidden;
+            position:relative;
+        }
+        
+        .button {
+            position: relative;
+            float: left;
+            border-radius: 25px;
+            height: 50px;
+            width: 50px;
+            border: 3px solid #151515;
+            margin-right: 50px;
+            background-color: lightgray;
+            cursor: pointer;
+        }
+
+        .buttons-row {
+            position: relative;
+            overflow: hidden;
+            margin-left: 50px;
+            padding-top: 50px;
+        }
+
+        .header-frame {
+            height: 75px;
+            background-color: lightgray;
+            border: 2px solid #151515;
+        }
+        
+        .history-frame {
+            width: 75px;
+            background-color: lightgray;
+            border: 2px solid #151515;
+            border-top: none;
+            float: left;
+            height: 366px;
+        }
+    </style>
 </head>
 <body>
     <div class="game-board">
@@ -10,23 +66,132 @@
             <div class="score"></div>
         </div>
         <div class="game-frame">
-            <div class="buttons-top-row">
-                <div class="button top-left"></div>
-                <div class="button top-center"></div>
-                <div class="button top-right"></div>
+            <div class="lines"></div>
+            <div class="buttons-row">
+                <div class="button"></div>
+                <div class="button"></div>
+                <div class="button"></div>
             </div>
-            <div class="buttons-middle-row">
-                <div class="button middle-left"></div>
-                <div class="button middle-center"></div>
-                <div class="button middle-right"></div>
+            <div class="buttons-row">
+                <div class="button"></div>
+                <div class="button"></div>
+                <div class="button"></div>
             </div>
-            <div class="buttons-bottom-row">
-                <div class="button bottom-left"></div>
-                <div class="button bottom-center"></div>
-                <div class="button bottom-right"></div>
+            <div class="buttons-row">
+                <div class="button"></div>
+                <div class="button"></div>
+                <div class="button"></div>
             </div>
         </div>
         <div class="history-frame"></div>
     </div>
+
+    <script>
+        (function ($) {
+
+            var PatternLockGame = function (options, context) {
+                this.context = context;
+                this.initialize(options);
+            }
+
+            var p = PatternLockGame.prototype;
+
+            var defaults = {
+                columns: 3,
+                rows: 3,
+                minimumSolution: 3
+            }
+
+
+            p.initialize = function (options) {
+                this.defaults = $.extend({}, defaults, options);
+
+
+                this.defaults.cells = this.defaults.columns * this.defaults.rows;
+                this.solutionList = [];
+                this.activelist = [];
+                this.nodeList = [];
+
+                this.gatherNodeList();
+                this.generateSolution();
+            }
+
+            p.nodes = function () {
+                return $(this.context).find('.button');
+            }
+
+            p.gatherNodeList = function () {
+                this.nodeList = this.nodes();
+                var game = this;
+                $(this.nodeList).each(function (index, item) {
+                    $(item).data('x', index % game.defaults.columns);
+                    $(item).data('y', Math.floor(index / game.defaults.rows));
+
+                    //$(item).html('<div style="margin: 15px 0px 0px 1px;">x:' + $(item).data('x') + "||" + 'y:' + $(item).data('y') + '</div>');
+                });
+            }
+
+            p.generateSolution = function () {
+
+                var snodes = Math.floor(Math.random() * this.defaults.cells) + this.defaults.minimumSolution % this.defaults.cells;
+                var startX = Math.floor(Math.random() * this.defaults.columns);
+                var startY = Math.floor(Math.random() * this.defaults.rows);
+
+                this.solutionList = [];
+                this.solutionList.push({x:startX, y:startY});
+
+                var i = 1;
+                while (i < snodes) {
+                    var nextX = (Math.random() > 0.5) ? 1 : -1;
+                    var nextY = (Math.random() > 0.5) ? 1 : -1;
+
+                    if (this.addSolutionNode(nextX, nextY)) {
+                        ++i;
+                    }
+                }
+
+                debugger;
+            };
+
+            p._testNode = function (nodeA, nodeB) {
+                return nodeA.x == nodeB.x && nodeA.y == nodeB.y;
+            }
+
+            p.addSolutionNode = function (nextX, nextY) {
+                var end = this.solutionList.length;
+                var last = this.solutionList[end-1];
+                var newNode = {x: last.x + nextX, y: last.y + nextY};
+
+                var test = true;
+                var game = this;
+
+                $.each(this.solutionList, function(index, item){
+                    test = test && !game._testNode(item, newNode);   
+                });
+
+                if (!test) {
+                    return false;
+                }
+
+                if (newNode.x >= this.defaults.columns || newNode.x < 0
+                    || newNode.y >= this.defaults.rows || newNode.y < 0) {
+                    return false;
+                }
+
+                this.solutionList.push(newNode);
+                return true;
+            }
+
+            $.fn.PatternLockGame = function (options) {
+                $(this).each(function () { $(this).data('calendar', new PatternLockGame(options, this)); });
+            }
+        })(jQuery);
+
+    </script>
+
+    <script>
+        $('.game-board').PatternLockGame();
+
+    </script>
 </body>
 </html>
