@@ -8,7 +8,14 @@
             margin: 10px;
             padding: 0px;
         }
-
+        .noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
         .game-frame {
             position: relative;
             background-color: gray;
@@ -57,10 +64,29 @@
             float: left;
             height: 366px;
         }
+
+        .lines {
+            position: absolute;
+            z-index: 1;
+        }
+        
+        .path-line {
+            position: absolute;
+            opacity: .5;
+            height: 25px;
+            transform-origin:center left;
+            background-color: white;
+            border: 2px solid #151515;
+        }
+
+        
+    /*-ms-transform: rotate(7deg); 
+    -webkit-transform: rotate(7deg); 
+    transform: rotate(7deg);*/
     </style>
 </head>
 <body>
-    <div class="game-board">
+    <div class="game-board noselect">
         <div class="header-frame">
             <div class="title"></div>
             <div class="score"></div>
@@ -116,32 +142,34 @@
             }
 
 
+            p.solutionList = [];
+            p.activelist = [];
+            p.nodeElementsList = [];
+            p.defaults = {};
+
             p.initialize = function (options) {
                 this.defaults = $.extend({}, defaults, options);
-
-
                 this.defaults.cells = this.defaults.columns * this.defaults.rows;
-                this.solutionList = [];
-                this.activelist = [];
-                this.nodeList = [];
 
                 this.gatherNodeList();
                 this.generateSolution();
-            }
-
-            p.nodes = function () {
-                return $(this.context).find('.button');
+                this.drawPaths(this.solutionList);
             }
 
             p.gatherNodeList = function () {
-                this.nodeList = this.nodes();
+                this.nodeElementsList = this._nodeElements();
                 var game = this;
-                $(this.nodeList).each(function (index, item) {
-                    $(item).data('x', index % game.defaults.columns);
-                    $(item).data('y', Math.floor(index / game.defaults.rows));
+                $(this.nodeElementsList).each(function (index, item) {
+                    var x = index % game.defaults.columns;
+                    var y = Math.floor(index / game.defaults.rows);
 
+                    $(item).data('node', {x: x, y: y});
                     //$(item).html('<div style="margin: 15px 0px 0px 1px;">x:' + $(item).data('x') + "||" + 'y:' + $(item).data('y') + '</div>');
                 });
+            }
+
+            p._nodeElements = function () {
+                return $(this.context).find('.button');
             }
 
             p.generateSolution = function () {
@@ -158,19 +186,30 @@
                 var firstNode = this.solutionList[0];
                 var lastNode = this._getRandomNextNode();
 
-                while (i < snodes || firstNode == lastNode) {
-                    this.solutionList.push(lastNode);
-                    lastNode = this._getRandomNextNode();
-                    ++i;
-                }
+                while (i < snodes && firstNode != lastNode) {
+                    if (!this._nodeIsInList(lastNode, this.solutionList)) {
+                        this.solutionList.push(lastNode);
+                        ++i;
+                    }
 
-                debugger;
+                    lastNode = this._getRandomNextNode();
+                }
             };
 
             p._sameNode = function (nodeA, nodeB) {
                 return nodeA.x == nodeB.x && nodeA.y == nodeB.y;
             }
-            
+
+            p._nodeIsInList = function (node, list) {
+                var i, test = false;
+
+                for (i = 0; i < list.length && !test; ++i) {
+                    test = test || this._sameNode(node, list[i]);
+                }
+
+                return test;
+            }
+
             p._nodeIsInBounds = function (node) {
                 return !(node.x >= this.defaults.columns || node.x < 0
                     || node.y >= this.defaults.rows || node.y < 0);
@@ -217,32 +256,71 @@
                 var currentNode = this.solutionList[this.solutionList.length - 1];
                 var possibleNodes = this._possibleNodes(currentNode);
                 var nextNode = null;
-                var game = this;
 
-                var pnodeIndex = Math.floor(Math.random() * possibleNodes.length);
-                var pnode = possibleNodes[pnodeIndex];
+                while (nextNode == null) {
+                    var pnodeIndex = Math.floor(Math.random() * possibleNodes.length);
+                    var pnode = possibleNodes[pnodeIndex];
 
-                while(nextNode == null) {
-                    for (var solutionIndex = 0; solutionIndex < this.solutionList.length; ++solutionIndex) {
-                        var snode = this.solutionList[solutionIndex];
-                        if (this._sameNode(snode, pnode)) {
-
-                            if (possibleNodes.length == 1) {
-                                nextNode = this.solutionList[0];
-                                debugger;
-                            }
-                            else {
-                                possibleNodes.splice(pnodeIndex, 1);
-                            }
+                    if (this._nodeIsInList(pnode, this.solutionList)) {
+                        if (possibleNodes.length == 1) {
+                            nextNode = this.solutionList[0];
                         }
                         else {
-                            nextNode = pnode;
+                            possibleNodes.splice(pnodeIndex, 1);
                         }
+                    }
+                    else {
+                        nextNode = pnode;
                     }
                 }
 
                 return nextNode;
             }
+
+            p.drawPaths = function (list) {
+
+                var i=0;
+                while (i < list.length - 2) {
+                    var nodeA = list[i];
+                    var nodeB = list[i + 1];
+                    this._lineFromNodeToNode(nodeA, nodeB);
+                    ++i;
+                }
+            }
+
+            p._lineFromNodeToNode = function (nodeA, nodeB) {
+                var itemA = this._getNodeElement(nodeA);
+                var itemB = this._getNodeElement(nodeB);
+                var positionA = itemA.offset();
+                var positionB = itemB.offset();
+
+                var line = $('<div class="path-line"></div>');
+
+                line.css({
+                    top: positionA.top - itemA.height(),
+                    left: positionA.left,
+                    width: Math.sqrt(Math.pow(positionB.left - positionA.left, 2) + Math.pow(positionB.top - positionA.top, 2))
+                });
+
+                $('.lines').append(line);
+
+                debugger;
+            }
+
+            p._getNodeElement = function (nodeA) {
+                var i = 0, element = null, item = null;
+                var list = this.nodeElementsList;
+                var item;
+                while (i < list.length && element == null) {
+                    item = list[i];
+
+                    if (this._sameNode(nodeA, $(item).data('node'))) {
+                        return $(item);
+                    }
+                    ++i;
+                }
+            }
+
 
             $.fn.PatternLockGame = function (options) {
                 $(this).each(function () { $(this).data('calendar', new PatternLockGame(options, this)); });
