@@ -66,14 +66,14 @@
         }
 
         .lines {
-            position: absolute;
+            position: relative;
             z-index: 1;
         }
         
         .path-line {
             position: absolute;
             opacity: .5;
-            height: 25px;
+            height: 10px;
             transform-origin:center left;
             background-color: white;
             border: 2px solid #151515;
@@ -91,8 +91,8 @@
             <div class="title"></div>
             <div class="score"></div>
         </div>
-        <div class="game-frame">
             <div class="lines"></div>
+        <div class="game-frame">
             <div class="buttons-row">
                 <div class="button"></div>
                 <div class="button"></div>
@@ -138,9 +138,7 @@
                     east: 2,
                     west: 3
                 }
-
             }
-
 
             p.solutionList = [];
             p.activelist = [];
@@ -150,11 +148,25 @@
             p.initialize = function (options) {
                 this.defaults = $.extend({}, defaults, options);
                 this.defaults.cells = this.defaults.columns * this.defaults.rows;
+                this.defaults.SolutionLength = this.defaults.minimumSolution;
 
                 this.gatherNodeList();
                 this.generateSolution();
+
+                this._gameTitle().empty();
+                this._gameTitle().append("<div> Number of Nodes in Solution: " + this.defaults.SolutionLength + "</div>");
                 this.drawPaths(this.solutionList);
             }
+
+            p._gameBoard = function () { return $(this.context); }
+            p._gameHeader = function () { return this._gameBoard().find('.header-frame'); }
+            p._gameFrame = function () { return this._gameBoard().find('.game-frame'); }
+            p._gameHistory = function () { return this._gameBoard().find('.history-frame'); }
+            p._gameTitle = function () { return this._gameHeader().find('.title'); }
+            p._gameScore = function () { return this._gameHeader().find('.score'); }
+            p._gameLines = function () { return this._gameBoard().find('.lines'); }
+            p._gameButtons = function () { return this._gameFrame().find('.button'); }
+
 
             p.gatherNodeList = function () {
                 this.nodeElementsList = this._nodeElements();
@@ -164,20 +176,20 @@
                     var y = Math.floor(index / game.defaults.rows);
 
                     $(item).data('node', {x: x, y: y});
-                    //$(item).html('<div style="margin: 15px 0px 0px 1px;">x:' + $(item).data('x') + "||" + 'y:' + $(item).data('y') + '</div>');
+                    $(item).html('<div style="margin: 15px 0px 0px 1px;">x:' + $(item).data('node').x + "||" + 'y:' + $(item).data('node').y + '</div>');// Debug
                 });
             }
-
+            
             p._nodeElements = function () {
-                return $(this.context).find('.button');
+                return this._gameButtons();
             }
 
-            p.generateSolution = function () {
-
-                var snodes = Math.floor(Math.random() * this.defaults.cells) + this.defaults.minimumSolution % this.defaults.cells;
-                var startX = Math.floor(Math.random() * this.defaults.columns);
-                var startY = Math.floor(Math.random() * this.defaults.rows);
-
+            p.generateSolution = function () {  
+                var d = this.defaults;
+                var snodes = (Math.floor(Math.random() * (d.cells - d.minimumSolution + 1)) + d.minimumSolution);
+                var startX = Math.floor(Math.random() * d.columns);
+                var startY = Math.floor(Math.random() * d.rows);
+                this.defaults.SolutionLength = snodes;
                 this.solutionList = [];
                 this.solutionList.push({x:startX, y:startY});
 
@@ -194,7 +206,37 @@
 
                     lastNode = this._getRandomNextNode();
                 }
+
+                if (firstNode == lastNode) {
+                    this._gameScore().append("<div>ended on last node: " + this._nodeText(lastNode) + "</div>")
+                }
             };
+
+            p._getRandomNextNode = function () {
+
+                var currentNode = this.solutionList[this.solutionList.length - 1];
+                var possibleNodes = this._possibleNodes(currentNode);
+                var nextNode = null;
+
+                while (nextNode == null) {
+                    var pnodeIndex = Math.floor(Math.random() * possibleNodes.length);
+                    var pnode = possibleNodes[pnodeIndex];
+
+                    if (this._nodeIsInList(pnode, this.solutionList)) {
+                        if (possibleNodes.length == 1) {
+                            nextNode = this.solutionList[0];
+                        }
+                        else {
+                            possibleNodes.splice(pnodeIndex, 1);
+                        }
+                    }
+                    else {
+                        nextNode = pnode;
+                    }
+                }
+
+                return nextNode;
+            }
 
             p._sameNode = function (nodeA, nodeB) {
                 return nodeA.x == nodeB.x && nodeA.y == nodeB.y;
@@ -251,42 +293,20 @@
                 return possibleNodes.slice(0);
             }
 
-            p._getRandomNextNode = function () {
-
-                var currentNode = this.solutionList[this.solutionList.length - 1];
-                var possibleNodes = this._possibleNodes(currentNode);
-                var nextNode = null;
-
-                while (nextNode == null) {
-                    var pnodeIndex = Math.floor(Math.random() * possibleNodes.length);
-                    var pnode = possibleNodes[pnodeIndex];
-
-                    if (this._nodeIsInList(pnode, this.solutionList)) {
-                        if (possibleNodes.length == 1) {
-                            nextNode = this.solutionList[0];
-                        }
-                        else {
-                            possibleNodes.splice(pnodeIndex, 1);
-                        }
-                    }
-                    else {
-                        nextNode = pnode;
-                    }
-                }
-
-                return nextNode;
-            }
 
             p.drawPaths = function (list) {
-
+                var text = "";
                 var i=0;
-                while (i < list.length - 2) {
-                    var nodeA = list[i];
-                    var nodeB = list[i + 1];
-                    this._lineFromNodeToNode(nodeA, nodeB);
+                while (i < list.length - 1) {
+                    this._lineFromNodeToNode(list[i], list[i + 1]);
+                    text = text + this._nodeText(list[i]) + ">>"; // Debug
                     ++i;
                 }
+                text = text + this._nodeText(list[i]);// Debug
+                this._gameTitle().append("<div>" + text + "</div>");// Debug
             }
+
+            p._nodeText = function (node) { return "(" + node.x + ", " + node.y + ")" }
 
             p._lineFromNodeToNode = function (nodeA, nodeB) {
                 var itemA = this._getNodeElement(nodeA);
@@ -296,15 +316,37 @@
 
                 var line = $('<div class="path-line"></div>');
 
+                var AxEqBx = nodeA.x == nodeB.x;
+                var AyEqBy = nodeA.y == nodeB.y;
+                var AxGtBx = nodeA.x > nodeB.x;
+                var AyGtBy = nodeA.y > nodeB.y;
+                var AxLtBx = nodeA.x < nodeB.x;
+                var AyLtBy = nodeA.y < nodeB.y;
+
+
+                var rotate = 0;
+                if(AxEqBx && AyGtBy) { rotate = -90; }
+                else if (AxEqBx && AyLtBy) { rotate = 90; }
+                else if (AxGtBx && AyEqBy) { rotate = 180; }
+                else if (AxLtBx && AyEqBy) { rotate = 0; }
+                else if (AxGtBx && AyGtBy) { rotate = -135; }
+                else if (AxGtBx && AyLtBy) { rotate = 135; }
+                else if (AxLtBx && AyGtBy) { rotate = -45; }
+                else if (AxLtBx && AyLtBy) { rotate = 45; }
+
+                var width = Math.sqrt(Math.pow(positionB.left - positionA.left, 2) + Math.pow(positionB.top - positionA.top, 2));
+
+                positionA.top;
+
+                var top = positionA.top;
+                var left = positionA.left;
+                this._gameLines().append(line);
                 line.css({
-                    top: positionA.top - itemA.height(),
-                    left: positionA.left,
-                    width: Math.sqrt(Math.pow(positionB.left - positionA.left, 2) + Math.pow(positionB.top - positionA.top, 2))
+                    top: top,
+                    left: left,
+                    width: width,
+                    transform: "rotate(" + rotate + "deg)"
                 });
-
-                $('.lines').append(line);
-
-                debugger;
             }
 
             p._getNodeElement = function (nodeA) {
@@ -321,7 +363,6 @@
                 }
             }
 
-
             $.fn.PatternLockGame = function (options) {
                 $(this).each(function () { $(this).data('calendar', new PatternLockGame(options, this)); });
             }
@@ -331,7 +372,6 @@
 
     <script>
         $('.game-board').PatternLockGame();
-
     </script>
 </body>
 </html>
