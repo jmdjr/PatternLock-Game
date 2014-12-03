@@ -25,7 +25,7 @@
         }
 
         .game-board {
-            height: 447px;
+            height: 700px;
             width: 479px;
             overflow:hidden;
             position:relative;
@@ -69,16 +69,28 @@
             position: relative;
             z-index: 1;
         }
-        
+
         .path-line {
             position: absolute;
-            opacity: .5;
+            opacity: .75;
             height: 10px;
             transform-origin:center left;
             background-color: white;
             border: 2px solid #151515;
+            border-left-width: 0px;
+            border-right-width: 0px;
+            border-radius: 5px;
         }
 
+            .path-line:last-child {
+                border-right-color: red;
+                border-right-width: 7px;
+            }
+            
+            .path-line:first-child {
+                border-left-color: green;
+                border-left-width: 7px;
+            }
         
     /*-ms-transform: rotate(7deg); 
     -webkit-transform: rotate(7deg); 
@@ -91,8 +103,8 @@
             <div class="title"></div>
             <div class="score"></div>
         </div>
-            <div class="lines"></div>
         <div class="game-frame">
+            <div class="lines"></div>
             <div class="buttons-row">
                 <div class="button"></div>
                 <div class="button"></div>
@@ -110,8 +122,12 @@
             </div>
         </div>
         <div class="history-frame"></div>
+    <div class="description">
+        press f5 to refresh page and see various generated paths across the nodes.  
+        these paths represent the "solutions" that the player will be attempting to find
+        during the game.  the lines start at the green edge, and end on the red edge.
     </div>
-
+    </div>
     <script>
         (function ($) {
 
@@ -164,7 +180,7 @@
             p._gameHistory = function () { return this._gameBoard().find('.history-frame'); }
             p._gameTitle = function () { return this._gameHeader().find('.title'); }
             p._gameScore = function () { return this._gameHeader().find('.score'); }
-            p._gameLines = function () { return this._gameBoard().find('.lines'); }
+            p._gameLines = function () { return this._gameFrame().find('.lines'); }
             p._gameButtons = function () { return this._gameFrame().find('.button'); }
 
 
@@ -342,8 +358,8 @@
                 var left = positionA.left;
                 this._gameLines().append(line);
                 line.css({
-                    top: top,
-                    left: left,
+                    top: top - 70,
+                    left: left + 15,
                     width: width,
                     transform: "rotate(" + rotate + "deg)"
                 });
