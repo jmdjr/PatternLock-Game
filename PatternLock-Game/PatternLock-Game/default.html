@@ -8,29 +8,31 @@
             margin: 10px;
             padding: 0px;
         }
+
         .noselect {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .game-board {
+            width: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+
         .game-frame {
             position: relative;
             background-color: gray;
             padding-bottom: 50px;
             width: 400px;
-            float:left;
+            float: left;
         }
 
-        .game-board {
-            height: 700px;
-            width: 479px;
-            overflow:hidden;
-            position:relative;
-        }
-        
+
         .button {
             position: relative;
             float: left;
@@ -43,6 +45,22 @@
             cursor: pointer;
         }
 
+            .button.correct {
+                background-color: green;
+            }
+
+            .button.before {
+                background-color: lightblue;
+            }
+
+            .button.after {
+                background-color: orange;
+            }
+
+            .button.wrong {
+                background-color: red;
+            }
+
         .buttons-row {
             position: relative;
             overflow: hidden;
@@ -51,31 +69,56 @@
         }
 
         .header-frame {
-            height: 75px;
+            padding: 10px 5px;
+            overflow:hidden;
             background-color: lightgray;
             border: 2px solid #151515;
         }
-        
+
         .history-frame {
-            width: 75px;
+            width: 96px;
             background-color: lightgray;
             border: 2px solid #151515;
             border-top: none;
             float: left;
             height: 366px;
+            overflow: auto;
         }
 
-        .lines {
+        .try-replay {
+            height: 25px;
+            width: 50px;
+            margin: 5px auto;
+            padding: 0px 5px;
+            border: 2px solid black;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .solution-lines {
             position: relative;
             z-index: 1;
         }
+
+        .attempt-lines {
+            position: relative;
+            z-index: 2;
+        }
+            .attempt-lines .path-line {
+                background-color: white;
+                opacity: .65;
+            }
+
+            .solution-lines .path-line {
+                background-color: rosybrown;
+                opacity: .45;
+            }
 
         .path-line {
             position: absolute;
             opacity: .75;
             height: 10px;
-            transform-origin:center left;
-            background-color: white;
+            transform-origin: center left;
             border: 2px solid #151515;
             border-left-width: 0px;
             border-right-width: 0px;
@@ -86,25 +129,70 @@
                 border-right-color: red;
                 border-right-width: 7px;
             }
-            
+
             .path-line:first-child {
                 border-left-color: green;
                 border-left-width: 7px;
             }
+
+            
+        .debug-box {
+            overflow: auto;
+            height: 200px;
+            background-color: lightgray;
+            border: 2px solid #151515;
+        }
+
+        .game-control-button {
+            height: 18px;
+            width: 78px;
+            padding: 5px;
+            border-radius: 10px;
+            background-color: lightgray;
+            border: 2px solid #151515;
+            position: absolute;
+            cursor: pointer;
+            z-index: 5;
         
-    /*-ms-transform: rotate(7deg); 
-    -webkit-transform: rotate(7deg); 
-    transform: rotate(7deg);*/
+        }
+
+        .submit-pattern {
+            right: 10px;
+            bottom: 10px;
+        }
+
+        .clear-pattern {
+            left: 10px;
+            bottom: 10px;
+            width: 86px;
+        }
+
+        .restart-game {
+            left: 10px;
+            top: 10px;
+        }
+
+        .reveal-pattern {
+            right: 10px;
+            top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="game-board noselect">
         <div class="header-frame">
-            <div class="title"></div>
+            <div class="title">
+                Welcome to Pattern Lock! the game of hacking your way through cellphone lock Patterns!
+                <br/>Below you will find an arrangement of button nodes, which require a specific pattern to be unlocked.
+
+            </div>
             <div class="score"></div>
         </div>
         <div class="game-frame">
-            <div class="lines"></div>
+            <div class="restart-game game-control-button">New Game</div>
+            <div class="reveal-pattern game-control-button">Solution</div>
+            <div class="solution-lines"></div>
+            <div class="attempt-lines"></div>
             <div class="buttons-row">
                 <div class="button"></div>
                 <div class="button"></div>
@@ -120,19 +208,25 @@
                 <div class="button"></div>
                 <div class="button"></div>
             </div>
+            <div class="submit-pattern game-control-button">Test Pattern</div>
+            <div class="clear-pattern game-control-button">Clear Pattern</div>
         </div>
         <div class="history-frame"></div>
-    <div class="description">
-        press f5 to refresh page and see various generated paths across the nodes.  
+        <div class="description">
+            press f5 to refresh page and see various generated paths across the nodes.  
         these paths represent the "solutions" that the player will be attempting to find
         during the game.  the lines start at the green edge, and end on the red edge.
-    </div>
+            <input type="button" onclick="simulatePath(this)" value="Simulate Path" />
+        </div>
+
+        <div class="debug-box"></div>
     </div>
     <script>
         (function ($) {
 
             var PatternLockGame = function (options, context) {
                 this.context = context;
+                $(this.context).data('gameObject', this);
                 this.initialize(options);
             }
 
@@ -142,6 +236,8 @@
                 columns: 3,
                 rows: 3,
                 minimumSolution: 3,
+                maximumSolution: 9,
+                maxTries: 20,
                 directions: [
                     { x: 0, y: -1 },    //north
                     { x: 0, y: 1 },     //south
@@ -153,11 +249,19 @@
                     south: 1,
                     east: 2,
                     west: 3
+                },
+                states: {
+                    correct: 'correct',
+                    before: 'before',
+                    after: 'after',
+                    wrong: 'wrong'
                 }
             }
 
+            p.activeList = [];
             p.solutionList = [];
-            p.activelist = [];
+            p.userList = [];
+            p.historyList = [];
             p.nodeElementsList = [];
             p.defaults = {};
 
@@ -165,13 +269,77 @@
                 this.defaults = $.extend({}, defaults, options);
                 this.defaults.cells = this.defaults.columns * this.defaults.rows;
                 this.defaults.SolutionLength = this.defaults.minimumSolution;
-
                 this.gatherNodeList();
-                this.generateSolution();
 
-                this._gameTitle().empty();
-                this._gameTitle().append("<div> Number of Nodes in Solution: " + this.defaults.SolutionLength + "</div>");
-                this.drawPaths(this.solutionList);
+
+                var game = this;
+                this._gameButtons().on('mousedown', function (e) {
+                    var node = $(this).data('node');
+                    if (!game._nodeIsInList(node, game.activeList) && game._testNodePossibility(node)) {
+                        game._clearNodeElementsState();
+                        game.activeList.push(node);
+                        game._gameUserLines().empty();
+                        game.drawPaths(game.activeList, game._gameUserLines());
+                    }
+                });
+
+                this._gameFrame().find('.submit-pattern').on('click', function () {
+                    if (game.activeList.length > 0) {
+                        game.userList = game.activeList;
+                        game.checkForWin(game.userList, game.solutionList);
+                        game.appendToHistory(game.userList);
+                        game._clearActiveList();
+                        game._updateScore();
+                        game._gameUserLines().empty();
+                    }
+                });
+
+                this._gameFrame().find('.reveal-pattern').on('click', function () {
+                    game.drawPaths(game.solutionList, game._gameSolutionLines());
+                });
+
+                this._gameFrame().find('.clear-pattern').on('click', function () {
+                    game._clearActiveList();
+                });
+
+                this._gameFrame().find('.restart-game').on('click', function () {
+                    game._startGameSequence();
+                });
+
+                this._startGameSequence();
+
+            }
+
+            p._clearNodeElementsState = function () {
+                $.each(this.nodeElementsList, this._clearNodeElementState);
+            }
+
+            p._clearActiveList = function () {
+                this.activeList = [];
+                this._gameUserLines().empty();
+                this._gameDebug().append('<br/>Pattern Cleared');
+            }
+
+            p._startGameSequence = function () {
+                this.solutionList = this.generatePath(); // generates a path, which is stored in the activeList
+                this.defaults.SolutionLength = this.solutionList.length;
+
+                this._gameDebug().empty();
+                this._gameDebug().append('New Game!');
+                this._gameDebug().append("<br/>Number of Nodes in Solution: " + this.defaults.SolutionLength);
+                this._updateScore();
+                this._clearNodeElementsState();
+                this._clearActiveList();
+            }
+
+            p._clearNodeElementState = function (index, element) {
+                $(element).removeClass();
+                $(element).addClass('button');
+            };
+
+            p._updateScore = function () {
+                var d = this.defaults;
+                this._gameScore().text('Tries Remaining: ' + (d.maxTries - this.historyList.length));
             }
 
             p._gameBoard = function () { return $(this.context); }
@@ -180,57 +348,64 @@
             p._gameHistory = function () { return this._gameBoard().find('.history-frame'); }
             p._gameTitle = function () { return this._gameHeader().find('.title'); }
             p._gameScore = function () { return this._gameHeader().find('.score'); }
-            p._gameLines = function () { return this._gameFrame().find('.lines'); }
+            p._gameSolutionLines = function () { return this._gameFrame().find('.solution-lines'); }
+            p._gameUserLines = function () { return this._gameFrame().find('.attempt-lines'); }
             p._gameButtons = function () { return this._gameFrame().find('.button'); }
 
+            p._gameDebug = function () { return this._gameBoard().find('.debug-box'); }
 
             p.gatherNodeList = function () {
                 this.nodeElementsList = this._nodeElements();
-                var game = this;
-                $(this.nodeElementsList).each(function (index, item) {
-                    var x = index % game.defaults.columns;
-                    var y = Math.floor(index / game.defaults.rows);
 
-                    $(item).data('node', {x: x, y: y});
-                    $(item).html('<div style="margin: 15px 0px 0px 1px;">x:' + $(item).data('node').x + "||" + 'y:' + $(item).data('node').y + '</div>');// Debug
-                });
+                var index = 0;
+                while (index < this.nodeElementsList.length) {
+                    var item = this.nodeElementsList[index];
+                    var x = index % this.defaults.columns;
+                    var y = Math.floor(index / this.defaults.rows);
+                    var node = new GameNode(x, y);
+                    $(item).data('node', node);
+                    $(item).html('<div style="margin: 15px 0px 0px 1px;">x:' + node.x + '||y:' + node.y +  '</div>');// Debug
+
+                    ++index;
+                }
             }
-            
+
             p._nodeElements = function () {
                 return this._gameButtons();
             }
 
-            p.generateSolution = function () {  
+            p.generatePath = function () {
                 var d = this.defaults;
-                var snodes = (Math.floor(Math.random() * (d.cells - d.minimumSolution + 1)) + d.minimumSolution);
+                var max = d.cells > d.maximumSolution ? d.maximumSolution : d.cells;
+                var snodes = (Math.floor(Math.random() * (max - d.minimumSolution + 1)) + d.minimumSolution);
                 var startX = Math.floor(Math.random() * d.columns);
                 var startY = Math.floor(Math.random() * d.rows);
-                this.defaults.SolutionLength = snodes;
-                this.solutionList = [];
-                this.solutionList.push({x:startX, y:startY});
+                this.activeList = [];
+                this.activeList.push(new GameNode(startX, startY));
 
                 var i = 1;
 
-                var firstNode = this.solutionList[0];
+                var firstNode = this.activeList[0];
                 var lastNode = this._getRandomNextNode();
 
                 while (i < snodes && firstNode != lastNode) {
-                    if (!this._nodeIsInList(lastNode, this.solutionList)) {
-                        this.solutionList.push(lastNode);
+                    if (!this._nodeIsInList(lastNode, this.activeList)) {
+                        this.activeList.push(lastNode);
                         ++i;
                     }
 
                     lastNode = this._getRandomNextNode();
                 }
 
-                if (firstNode == lastNode) {
-                    this._gameScore().append("<div>ended on last node: " + this._nodeText(lastNode) + "</div>")
+                if (firstNode == lastNode && i != snodes) {
+                    //this._gameDebug().append("<div>node count: " + snodes + ". ended on last node: " + this._nodeText(lastNode) + "</div>") //debug
                 }
+
+                return this.activeList;
             };
 
             p._getRandomNextNode = function () {
-
-                var currentNode = this.solutionList[this.solutionList.length - 1];
+                var currentNode = this.activeList[this.activeList.length - 1];
                 var possibleNodes = this._possibleNodes(currentNode);
                 var nextNode = null;
 
@@ -238,9 +413,9 @@
                     var pnodeIndex = Math.floor(Math.random() * possibleNodes.length);
                     var pnode = possibleNodes[pnodeIndex];
 
-                    if (this._nodeIsInList(pnode, this.solutionList)) {
+                    if (this._nodeIsInList(pnode, this.activeList)) {
                         if (possibleNodes.length == 1) {
-                            nextNode = this.solutionList[0];
+                            nextNode = this.activeList[0];
                         }
                         else {
                             possibleNodes.splice(pnodeIndex, 1);
@@ -262,10 +437,12 @@
                 var i, test = false;
 
                 for (i = 0; i < list.length && !test; ++i) {
-                    test = test || this._sameNode(node, list[i]);
+                    if (this._sameNode(node, list[i])) {
+                        return true;
+                    }
                 }
 
-                return test;
+                return false;
             }
 
             p._nodeIsInBounds = function (node) {
@@ -274,7 +451,12 @@
             }
 
             p._addNodes = function (nodeA, nodeB) {
-                return { x: nodeA.x + nodeB.x, y: nodeA.y + nodeB.y };
+                return new GameNode(nodeA.x + nodeB.x, nodeA.y + nodeB.y);
+            }
+
+            p._testNodePossibility = function (node) {
+                var al = this.activeList;
+                return this._nodeIsInBounds(node) && (al.length > 0 ? this._nodeIsInList(node, this._possibleNodes(al[al.length - 1])) : true);
             }
 
             p._possibleNodes = function (node) {
@@ -306,23 +488,20 @@
                 newNode = this._addNodes(this._addNodes(node, d[c.south]), d[c.west]);
                 if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
 
-                return possibleNodes.slice(0);
+                return possibleNodes;
             }
 
+            p.drawPaths = function (list, container) {
+                var i = 0;
+                var item = null;
 
-            p.drawPaths = function (list) {
-                var text = "";
-                var i=0;
+                container.empty();
                 while (i < list.length - 1) {
-                    this._lineFromNodeToNode(list[i], list[i + 1]);
-                    text = text + this._nodeText(list[i]) + ">>"; // Debug
+                    item = this._lineFromNodeToNode(list[i], list[i + 1]);
+                    container.append(item);
                     ++i;
                 }
-                text = text + this._nodeText(list[i]);// Debug
-                this._gameTitle().append("<div>" + text + "</div>");// Debug
             }
-
-            p._nodeText = function (node) { return "(" + node.x + ", " + node.y + ")" }
 
             p._lineFromNodeToNode = function (nodeA, nodeB) {
                 var itemA = this._getNodeElement(nodeA);
@@ -339,9 +518,8 @@
                 var AxLtBx = nodeA.x < nodeB.x;
                 var AyLtBy = nodeA.y < nodeB.y;
 
-
                 var rotate = 0;
-                if(AxEqBx && AyGtBy) { rotate = -90; }
+                if (AxEqBx && AyGtBy) { rotate = -90; }
                 else if (AxEqBx && AyLtBy) { rotate = 90; }
                 else if (AxGtBx && AyEqBy) { rotate = 180; }
                 else if (AxLtBx && AyEqBy) { rotate = 0; }
@@ -354,15 +532,16 @@
 
                 positionA.top;
 
-                var top = positionA.top;
-                var left = positionA.left;
-                this._gameLines().append(line);
+                var top = positionA.top - this._gameHeader().height() + 6; // 6 being the two borders width together
+                var left = positionA.left + Math.floor(itemA.width() / 2) - 6; // 6 being the two borders width together
                 line.css({
-                    top: top - 70,
-                    left: left + 15,
+                    top: top,
+                    left: left,
                     width: width,
                     transform: "rotate(" + rotate + "deg)"
                 });
+
+                return line;
             }
 
             p._getNodeElement = function (nodeA) {
@@ -379,6 +558,111 @@
                 }
             }
 
+            p.simulateUserAttempt = function () {
+                this.userList = this.generatePath();
+                this.drawPaths(this.userList, this._gameUserLines());
+                this.checkForWin(this.userList, this.solutionList);
+                this.appendToHistory(this.userList);
+
+                this.activeList = [];
+            }
+
+            p.checkForWin = function (attemptList, solutionList) {
+                this._markNodes(attemptList, solutionList);
+                this._clearNodeElementsState();
+
+                var i = 0;
+                while (i < attemptList.length) {
+                    var node = attemptList[i];
+                    var nodeElement = this._getNodeElement(node);
+
+                    if (node.state) {
+                        nodeElement.addClass(node.state);
+                    }
+
+                    ++i;
+                }
+            }
+
+            p._markNodes = function (attemptList, solutionList) {
+                var i = 0;
+
+                while (i < attemptList.length) {
+                    this._markNode(attemptList[i], i, solutionList);
+                    ++i;
+                }
+            }
+
+            p._markNode = function (node, position, solutionList) {
+                node.state = this._relativeNodePositionState(node, position, solutionList);
+            }
+
+            p._relativeNodePositionState = function (attemptNode, position, solutionList) {
+                
+                var d = this.defaults;
+
+                if (position >= solutionList.length) {
+                    return d.states.wrong;
+                }
+                var solutionNode = solutionList[position];
+                if (this._sameNode(attemptNode, solutionNode)) {
+                    return d.states.correct;
+                }
+
+                var previousList = solutionList.slice(0, position);
+                if (this._nodeIsInList(attemptNode, previousList)) {
+                    return d.states.before;
+                }
+
+                var afterList = solutionList.slice(position + 1);
+                if (this._nodeIsInList(attemptNode, afterList)) {
+                    return d.states.after;
+                }
+
+                return d.states.wrong;
+            }
+
+            p.appendToHistory = function (list) {
+                var tryNumber = $('<div onclick="histroyReplay(this)" class="try-replay"></div>');
+                var attempts = this._gameHistory().find('.try-replay');
+
+                tryNumber.text('try #' + (attempts.length + 1));
+                tryNumber.data('historyIndex', attempts.length);
+                this.historyList.push(list);
+
+                this._gameHistory().append(tryNumber);
+            }
+
+            p._printNodeList = function (list) {
+                var text = "";
+                var i = 0;
+
+                while (i < list.length - 1) {
+                    text = text + list[i].toString() + ">>"; // Debug
+                    ++i;
+                }
+
+                text = text + list[i].toString();// Debug
+                this._gameDebug().append("<div>" + text + "</div>");// Debug
+            }
+
+            p.replayPath = function (historyIndex) {
+                if (historyIndex < this.historyList.length) {
+                    this._gameDebug().append('<div>Attempt #' + (historyIndex + 1) + "</div>");
+                    this.__printNodeList(this.historyList[historyIndex]);
+                    this.drawPaths(this.historyList[historyIndex], this._gameUserLines());
+                    this.checkForWin(this.historyList[historyIndex], this.solutionList);
+                }
+            }
+
+            var GameNode = function (x, y, state) {
+                this.x = x || 0;
+                this.y = y || 0;
+                this.state = state || defaults.states.wrong;
+
+                this.toString = function () { return '(' + this.x + ", " + '' + this.y + ')';  }
+            }
+
             $.fn.PatternLockGame = function (options) {
                 $(this).each(function () { $(this).data('calendar', new PatternLockGame(options, this)); });
             }
@@ -388,6 +672,14 @@
 
     <script>
         $('.game-board').PatternLockGame();
+
+        function simulatePath(e) {
+            $('.game-board').data('gameObject').simulateUserAttempt();
+        }
+
+        function histroyReplay(input) {
+            $('.game-board').data('gameObject').replayPath($(input).data('historyIndex'));
+        }
     </script>
 </body>
 </html>
