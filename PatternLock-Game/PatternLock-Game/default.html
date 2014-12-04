@@ -235,7 +235,7 @@
             var defaults = {
                 columns: 3,
                 rows: 3,
-                minimumSolution: 3,
+                minimumSolution: 4,
                 maximumSolution: 9,
                 maxTries: 20,
                 directions: [
@@ -304,6 +304,7 @@
 
                 this._gameFrame().find('.restart-game').on('click', function () {
                     game._startGameSequence();
+                    game._gameSolutionLines().empty();
                 });
 
                 this._startGameSequence();
