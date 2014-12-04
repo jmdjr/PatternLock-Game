@@ -600,10 +600,7 @@
             p._relativeNodePositionState = function (attemptNode, position, solutionList) {
                 
                 var d = this.defaults;
-
-                if (position >= solutionList.length) {
-                    return d.states.wrong;
-                }
+                
                 var solutionNode = solutionList[position];
                 if (this._sameNode(attemptNode, solutionNode)) {
                     return d.states.correct;
