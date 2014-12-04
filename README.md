@@ -5,4 +5,4 @@ Mastermind meets a matrix.  A game where you must figure out the pattern (simila
 
 Demo 
 =====
-<a href="https://rawgit.com/jmdjr/PatternLock-Game/master/PatternLock-Game/PatternLock-Game/default.html"> Current Working Version </a>
+<a href="https://rawgit.com/jmdjr/PatternLock-Game/master/PatternLock-Game/PatternLock-Game/default.html" target="_blank"> Current Working Version </a>
