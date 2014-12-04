@@ -601,8 +601,7 @@
             p._relativeNodePositionState = function (attemptNode, position, solutionList) {
                 
                 var d = this.defaults;
-                
-
+            
                 var previousList = solutionList.slice(0, position);
                 if (this._nodeIsInList(attemptNode, previousList)) {
                     return d.states.before;
@@ -614,7 +613,7 @@
                 }
                 
                 var solutionNode = solutionList[position];
-                if (position < this.solutionList.length && .this._sameNode(attemptNode, solutionNode)) {
+                if (position < this.solutionList.length && this._sameNode(attemptNode, solutionNode)) {
                     return d.states.correct;
                 }
 
