@@ -602,14 +602,6 @@
                 
                 var d = this.defaults;
                 
-                var solutionNode = solutionList[position];
-                if(!solutionNode) {
-                    return d.states.wrong;
-                }
-                
-                if (this._sameNode(attemptNode, solutionNode)) {
-                    return d.states.correct;
-                }
 
                 var previousList = solutionList.slice(0, position);
                 if (this._nodeIsInList(attemptNode, previousList)) {
@@ -619,6 +611,11 @@
                 var afterList = solutionList.slice(position + 1);
                 if (this._nodeIsInList(attemptNode, afterList)) {
                     return d.states.after;
+                }
+                
+                var solutionNode = solutionList[position];
+                if (position < this.solutionList.length && .this._sameNode(attemptNode, solutionNode)) {
+                    return d.states.correct;
                 }
 
                 return d.states.wrong;
