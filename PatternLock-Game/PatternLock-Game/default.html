@@ -603,6 +603,10 @@
                 var d = this.defaults;
                 
                 var solutionNode = solutionList[position];
+                if(!solutionNode) {
+                    return d.states.wrong;
+                }
+                
                 if (this._sameNode(attemptNode, solutionNode)) {
                     return d.states.correct;
                 }
