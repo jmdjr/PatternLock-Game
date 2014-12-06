@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <title></title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <style>
@@ -17,11 +18,20 @@
             -ms-user-select: none;
             user-select: none;
         }
+        input {
+            margin-top: 10px;
+        }
 
         .game-board {
-            width: 500px;
+            width: 502px;
             overflow: hidden;
             position: relative;
+            display:inline-block;
+        }
+        
+        .game-details {
+            display:inline-block;
+            width:200px;
         }
 
         .game-frame {
@@ -30,8 +40,10 @@
             padding-bottom: 50px;
             width: 400px;
             float: left;
+            border: 2px solid black;
+            border-top: none;
+            border-right: none;
         }
-
 
         .button {
             position: relative;
@@ -44,9 +56,13 @@
             background-color: lightgray;
             cursor: pointer;
         }
-
+        
             .button.correct {
                 background-color: green;
+            }
+
+            .button.close {
+                background-color: #FFFFFF;
             }
 
             .button.before {
@@ -75,13 +91,24 @@
             border: 2px solid #151515;
         }
 
+        .title {
+            display: inline-block;
+            width: 200px;
+        }
+
+        .score {
+            display: inline-block;
+            float: right;
+            margin-right: 10px;
+        }
+
         .history-frame {
             width: 96px;
             background-color: lightgray;
             border: 2px solid #151515;
             border-top: none;
             float: left;
-            height: 366px;
+            height: 368px;
             overflow: auto;
         }
 
@@ -126,21 +153,24 @@
         }
 
             .path-line:last-child {
-                border-right-color: red;
+                border-right-color: darkred;
                 border-right-width: 7px;
             }
 
             .path-line:first-child {
-                border-left-color: green;
+                border-left-color: darkgreen;
                 border-left-width: 7px;
             }
 
-            
         .debug-box {
             overflow: auto;
             height: 200px;
             background-color: lightgray;
             border: 2px solid #151515;
+            border-top: none;
+            display:block;
+            clear:both;
+            padding: 5px;
         }
 
         .game-control-button {
@@ -153,7 +183,6 @@
             position: absolute;
             cursor: pointer;
             z-index: 5;
-        
         }
 
         .submit-pattern {
@@ -176,15 +205,17 @@
             right: 10px;
             top: 10px;
         }
+
+        .game-details {
+            vertical-align:top;
+        }
     </style>
 </head>
 <body>
     <div class="game-board noselect">
         <div class="header-frame">
             <div class="title">
-                Welcome to Pattern Lock! the game of hacking your way through cellphone lock Patterns!
-                <br/>Below you will find an arrangement of button nodes, which require a specific pattern to be unlocked.
-
+                Welcome to Pattern Lock!
             </div>
             <div class="score"></div>
         </div>
@@ -212,6 +243,13 @@
             <div class="clear-pattern game-control-button">Clear Pattern</div>
         </div>
         <div class="history-frame"></div>
+
+        <div class="debug-box"></div>
+    </div>
+    <div class="game-details"> 
+        the game of hacking your way through cell-phone lock Patterns!
+                <br/>Below you will find an arrangement of button nodes, which require a specific pattern to be unlocked.
+    
         <div class="description">
             press f5 to refresh page and see various generated paths across the nodes.  
         these paths represent the "solutions" that the player will be attempting to find
@@ -219,7 +257,13 @@
             <input type="button" onclick="simulatePath(this)" value="Simulate Path" />
         </div>
 
-        <div class="debug-box"></div>
+    <div class="set-difficulty"> 
+        <input type="button" onclick="switchDifficulty(this)" value="To Medium" />
+        <div class="easy"></div>
+        <div class="medium hidden"></div>
+        <div class="hard hidden"></div>
+    </div>
+
     </div>
     <script>
         (function ($) {
@@ -238,6 +282,7 @@
                 minimumSolution: 4,
                 maximumSolution: 9,
                 maxTries: 20,
+                showPatternRelativePosition: true,
                 directions: [
                     { x: 0, y: -1 },    //north
                     { x: 0, y: 1 },     //south
@@ -254,6 +299,7 @@
                     correct: 'correct',
                     before: 'before',
                     after: 'after',
+                    close: 'close',
                     wrong: 'wrong'
                 }
             }
@@ -304,7 +350,6 @@
 
                 this._gameFrame().find('.restart-game').on('click', function () {
                     game._startGameSequence();
-                    game._gameSolutionLines().empty();
                 });
 
                 this._startGameSequence();
@@ -321,6 +366,10 @@
                 this._gameDebug().append('<br/>Pattern Cleared');
             }
 
+            p._clearHistory = function () {
+
+            }
+
             p._startGameSequence = function () {
                 this.solutionList = this.generatePath(); // generates a path, which is stored in the activeList
                 this.defaults.SolutionLength = this.solutionList.length;
@@ -328,9 +377,13 @@
                 this._gameDebug().empty();
                 this._gameDebug().append('New Game!');
                 this._gameDebug().append("<br/>Number of Nodes in Solution: " + this.defaults.SolutionLength);
-                this._updateScore();
                 this._clearNodeElementsState();
                 this._clearActiveList();
+                this._gameUserLines().empty();
+                this._gameSolutionLines().empty();
+                this._gameHistory().empty();
+                this.historyList = [];
+                this._updateScore();
             }
 
             p._clearNodeElementState = function (index, element) {
@@ -533,8 +586,8 @@
 
                 positionA.top;
 
-                var top = positionA.top - this._gameHeader().height() + 6; // 6 being the two borders width together
-                var left = positionA.left + Math.floor(itemA.width() / 2) - 6; // 6 being the two borders width together
+                var top = positionA.top - this._gameHeader().height() - 12; // 6 being the two borders width together
+                var left = positionA.left + Math.floor(itemA.width() / 2) - 12; // 6 being the two borders width together
                 line.css({
                     top: top,
                     left: left,
@@ -566,6 +619,7 @@
                 this.appendToHistory(this.userList);
 
                 this.activeList = [];
+                this._updateScore();
             }
 
             p.checkForWin = function (attemptList, solutionList) {
@@ -604,11 +658,17 @@
             
                 var previousList = solutionList.slice(0, position);
                 if (this._nodeIsInList(attemptNode, previousList)) {
+                    if (!d.showPatternRelativePosition) {
+                        return d.states.close;
+                    }
                     return d.states.before;
                 }
 
                 var afterList = solutionList.slice(position + 1);
                 if (this._nodeIsInList(attemptNode, afterList)) {
+                    if (!d.showPatternRelativePosition) {
+                        return d.states.close;
+                    }
                     return d.states.after;
                 }
                 
@@ -631,23 +691,8 @@
                 this._gameHistory().append(tryNumber);
             }
 
-            p._printNodeList = function (list) {
-                var text = "";
-                var i = 0;
-
-                while (i < list.length - 1) {
-                    text = text + list[i].toString() + ">>"; // Debug
-                    ++i;
-                }
-
-                text = text + list[i].toString();// Debug
-                this._gameDebug().append("<div>" + text + "</div>");// Debug
-            }
-
             p.replayPath = function (historyIndex) {
                 if (historyIndex < this.historyList.length) {
-                    this._gameDebug().append('<div>Attempt #' + (historyIndex + 1) + "</div>");
-                    this.__printNodeList(this.historyList[historyIndex]);
                     this.drawPaths(this.historyList[historyIndex], this._gameUserLines());
                     this.checkForWin(this.historyList[historyIndex], this.solutionList);
                 }
@@ -677,6 +722,10 @@
 
         function histroyReplay(input) {
             $('.game-board').data('gameObject').replayPath($(input).data('historyIndex'));
+        }
+
+        function switchDifficulty(input) {
+            //$('.game-board').data('gameObject').replayPath($(input).data('historyIndex'));
         }
     </script>
 </body>
