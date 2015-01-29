@@ -45,6 +45,17 @@
             border-right: none;
         }
 
+        .buttonlist {
+            list-item-type: none;
+        }
+        
+        ul.buttonlist > li {
+            clear: both;
+            position: relative;
+            overflow:hidden;
+            padding-bottom:5px;
+        }
+        
         .button {
             position: relative;
             float: left;
@@ -121,7 +132,9 @@
             background-color: white;
             cursor: pointer;
         }
-
+        
+        
+        
         .solution-lines {
             position: relative;
             z-index: 1;
@@ -256,7 +269,7 @@
         nodes in the pattern be lit green.  at the bottom you will see a count as to how many nodes are in the pattern.
         your target is to achieve this many green nodes to win.  
         the color's meaning are as follows: 
-        <ul style="list-item-type: none">
+        <ul class="buttonlist">
             <li>
                 <div class="button"></div> is the default color.  all buttons not included in your pattern will be this color.
             </li>
@@ -273,11 +286,9 @@
                 <div class="button before"></div> buttons are in the pattern, but were supposed to be selected earlier.
             </li>
             <li>
-                <div class="button after">orange</div> buttons are in the pattern, but were supposed to be selected later.
+                <div class="button after"></div> buttons are in the pattern, but were supposed to be selected later.
             </li>
         </ul>
-        <br/>
-        <br/>
         there are still plenty of bugs in this, but it gets the game point across.
         
             <input type="button" onclick="simulatePath(this)" value="Simulate Path" />
