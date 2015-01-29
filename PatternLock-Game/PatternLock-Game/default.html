@@ -664,15 +664,21 @@
                 this._clearNodeElementsState();
 
                 var i = 0;
+                var allGreen = true; // optimism
                 while (i < attemptList.length) {
                     var node = attemptList[i];
                     var nodeElement = this._getNodeElement(node);
 
                     if (node.state) {
                         nodeElement.addClass(node.state);
+                        allGreen = allGreen && node.state == this.defaults.states.correct;
                     }
 
                     ++i;
+                }
+                
+                if(allGreen) {
+                    this._gameDebug().append("<br/> You have won the game! press new game to play again!");
                 }
             }
 
