@@ -250,20 +250,29 @@
         the game of hacking your way through cell-phone lock Patterns!
                 <br/>Below you will find an arrangement of button nodes, which require a specific pattern to be unlocked.
     
-        <div class="description">
+        <article>
             press f5 to refresh page and see various generated paths across the nodes.  
         these paths represent the "solutions" that the player will be attempting to find
         during the game.  the lines start at the green edge, and end on the red edge.
+        <br/>
+        since this is an alpha version of the game, it is only the minimum viable product i could produce to 
+        represent the game concept.  click each dot in order to create your guessing pattern, and check it against
+        the hidden solution.  there are extra buttons here for debugging purposes.  the win solution is to have all
+        nodes in the pattern be lit green.  at the bottom you will see a count as to how many nodes are in the pattern.
+        your target is to achieve this many green nodes to win.  <br/>
+        there are still plenty of bugs in this, but it gets the game point across.
+        
             <input type="button" onclick="simulatePath(this)" value="Simulate Path" />
-        </div>
-
+            
+        </article>
+<!--
     <div class="set-difficulty"> 
         <input type="button" onclick="switchDifficulty(this)" value="To Medium" />
         <div class="easy"></div>
         <div class="medium hidden"></div>
         <div class="hard hidden"></div>
     </div>
-
+-->
     </div>
     <script>
         (function ($) {
