@@ -247,22 +247,27 @@
         <div class="debug-box"></div>
     </div>
     <div class="game-details"> 
-        the game of hacking your way through cell-phone lock Patterns!
-                <br/>Below you will find an arrangement of button nodes, which require a specific pattern to be unlocked.
-    
-        <article>
-            press f5 to refresh page and see various generated paths across the nodes.  
-        these paths represent the "solutions" that the player will be attempting to find
-        during the game.  the lines start at the green edge, and end on the red edge.
-        </article>
-        <article>
+        the game of hacking your way through cell-phone lock Patterns!<br/>
+        Below you will find an arrangement of button nodes, which require a specific pattern to be unlocked.<br/>
+        <br/>
         since this is an alpha version of the game, it is only the minimum viable product i could produce to 
         represent the game concept.  click each dot in order to create your guessing pattern, and check it against
         the hidden solution.  there are extra buttons here for debugging purposes.  the win solution is to have all
         nodes in the pattern be lit green.  at the bottom you will see a count as to how many nodes are in the pattern.
-        your target is to achieve this many green nodes to win.  <br/><br/>
+        your target is to achieve this many green nodes to win.  
+        the color's meaning are as follows: 
+        <ul>
+            <li>
+                <inline style="color: lightgray">Gray</inline> is the default color.  all buttons not included in your pattern will be this color.
+            </li>
+            <li>
+                
+            </li>
+            
+        </ul>
+        <br/>
+        <br/>
         there are still plenty of bugs in this, but it gets the game point across.
-        </article>
         
             <input type="button" onclick="simulatePath(this)" value="Simulate Path" />
             
