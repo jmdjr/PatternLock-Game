@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Pattern Lock Game V 2.0</title>
+    <script src="Script/phaser.js"></script>
+</head>
+<body>
+    <script>
+        var game = new Phaser.Game(308, 492, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+        function preload() {
+            ButtonScreenManager.preload(game);
+            GameButtonManager.preload(game);
+        }
+
+        function create() {
+            ButtonScreenManager.create(game);
+        }
+
+        function update() {
+
+        }
+
+
+
+        //*******************************************************************************************************************************************************
+        //                   Game Resources - Buttons: Manager for all button related activities.
+        //*******************************************************************************************************************************************************
+        var GameButtonManager = {
+            info: {
+                key: 'buttons',
+                src: 'Resources/ButtonsSpriteSheet.png',
+                height: 34,
+                width: 34
+            },
+
+            buttonState: { 
+                Idle: 0,
+                Active: 1
+            },
+
+            overlayState: {
+                Correct: 2,
+                Wrong: 3,
+                Over: 4,
+                Close: 5,
+                Under: 6
+            },
+
+            preload: function (game) {
+                game.load.spritesheet(this.info.key, this.info.src, this.info.height, this.info.width, 7);
+            },
+
+            button: function (game, x, y, xpad, ypad) {
+                Phaser.Sprite.call(this, game, x * (GameButtonManager.info.width + xpad) + xpad, y * (GameButtonManager.info.height + ypad) + ypad, GameButtonManager.info.key, GameButtonManager.buttonState.Idle);
+                this._active = false;
+                this._pos = { x: x, y: y };
+            }
+        }
+
+        var p = GameButtonManager.button.prototype = Object.create(Phaser.Sprite.prototype);
+        GameButtonManager.button.prototype.constructor = GameButtonManager.button;
+        
+        p.activate = function () {
+            this.frame = GameButtonManager.buttonState.Active;
+            this._active = true;
+        }
+
+        p.deactivate = function () {
+            this.frame = GameButtonManager.buttonState.Idle;
+            this._active = false;
+        }
+
+        p.update = function () {
+
+        }
+
+        //*******************************************************************************************************************************************************
+        //                   Game Resources - ButtonScreenManager
+        //*******************************************************************************************************************************************************
+
+        var ButtonScreenManager = {
+            info: {
+                key: 'background',
+                src: 'Resources/cellphone.png',
+                height: 492,
+                width: 308,
+                top: 69,
+                left: 27,
+                bottom: 393,
+                right: 283
+            },
+            
+            lockPatterns: {
+                small3x3: {
+                    v: 3,
+                    h: 3,
+                    vpad: 10,
+                    hpad: 10
+                },
+                medium5x5: {
+                    v: 5,
+                    h: 5,
+                    vpad: 10,
+                    hpad: 10
+                },
+                odd5x3: {
+                    v: 5,
+                    h: 3,
+                    vpad: 10,
+                    hpad: 10
+                }
+            },
+
+            _lockButtons: null,
+            _lockPattern: null,
+
+            preload: function (game) {
+                game.load.image(this.info.key, this.info.src);
+            },
+
+            create: function (game) {
+                this._lockButtons = game.add.group();
+                this._lockPattern = this.lockPatterns.small3x3;
+                this._drawLockScreen(game);
+                this._lockButtons.
+                game.add.sprite(0, 0, this.info.key, this.info.src);
+            }, 
+
+            _drawLockScreen: function (game) {
+                if (this._lockPattern == null) {
+                    return null;
+                }
+                var vp = this._lockPattern.vpad || 0;
+                var hp = this._lockPattern.hpad || 0;
+
+                for (var i = 0; i < this._lockPattern.v; ++i) {
+                    for (var j = 0; j < this._lockPattern.h; ++j) {
+                        var button = new GameButtonManager.button(game, j, i, vp, hp);
+
+                        //if (((i * w) + j) % 2 == 0) {
+                        //    button.changeState(GameButtonManager.buttonState.Active);
+                        //}
+
+                        this._lockButtons.add(button);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
