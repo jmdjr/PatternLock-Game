@@ -2,6 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Pattern Lock Game V 2.0</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://sugarjs.com/release/current/sugar.min.js"></script>
     <script src="Script/phaser.js"></script>
     <script src="Script/jquerymy-1.1.4.js"></script>
 </head>
@@ -15,11 +17,11 @@
         }
 
         function create() {
+            //DebugControlScreenManager.create();
             ButtonScreenManager.create(game);
         }
 
         function update() {
-
         }
 
 
@@ -82,8 +84,16 @@
 
         var ButtonScreenManager = {
             info: {
-                key: 'background',
-                src: 'Resources/cellphone.png',
+                screenFrame: {
+                    ref: null,
+                    key: 'frame',
+                    src: 'Resources/cellphone.png',
+                },
+                screenBackground: {
+                    ref: null,
+                    key: 'screenBackground',
+                    src: 'Resources/background_1.png'
+                },
                 
                 height: 492,
                 width: 308,
@@ -95,7 +105,8 @@
             textGraphic: {
                 key: 'swipeText',
                 src: 'Resources/phoneText.png',
-                scale: new Phaser.Point(0.75, 0.75)
+                scale: new Phaser.Point(0.75, 0.75),
+                ref: null
             },
             
             lockPatterns: {
@@ -104,9 +115,9 @@
                     h: 3,
                     vpad: 10,
                     hpad: 10,
-                    top: 100,
-                    left: 10,
-                    textX: 100,
+                    top: 166,
+                    left: 66,
+                    textX: 65,
                     textY: 100
                 },
                 medium4x4: {
@@ -114,9 +125,9 @@
                     h: 4,
                     vpad: 10,
                     hpad: 10,
-                    top: 100,
-                    left: 10,
-                    textX: 100,
+                    top: 131,
+                    left: 43,
+                    textX: 65,
                     textY: 100
                 },
                 odd5x3: {
@@ -124,37 +135,61 @@
                     h: 3,
                     vpad: 10,
                     hpad: 10,
-                    top: 100,
-                    left: 10,
-                    textX: 100,
+                    top: 96,
+                    left: 68,
+                    textX: 65,
                     textY: 100
                 }
             },
+            
+            _background: null,
+            _midground: null,
+            _forground: null,
 
             _lockButtons: null,
             _lockPattern: null,
 
             preload: function (game) {
-                game.load.image(this.info.key, this.info.src);
+                game.load.image(this.info.screenBackground.key, this.info.screenBackground.src);
+                game.load.image(this.info.screenFrame.key, this.info.screenFrame.src);
                 game.load.image(this.textGraphic.key, this.textGraphic.src);
             },
 
             create: function (game) {
+
                 this._lockPattern = this.lockPatterns.small3x3;
+
+                this._drawBaseGraphics();
+
+                this._createLockButtons(game);
+
+                //DebugControlScreenManager.setupControls(this._lockButtons, ['x', 'y']);
+            }, 
+
+            _drawBaseGraphics: function () {
+
+                this._background = game.add.group();
+                this._midground = game.add.group();
+                this._forground = game.add.group();
+
+                this.info.screenBackground.ref = game.add.sprite(this.info.left, this.info.top, this.info.screenBackground.key, this.info.screenBackground.src);
+                this.textGraphic.ref = game.add.sprite(this._lockPattern.textX, this._lockPattern.textY, this.textGraphic.key);
+                this.textGraphic.ref.scale = this.textGraphic.scale;
+                this.info.screenFrame.ref = game.add.sprite(0, 0, this.info.screenFrame.key, this.info.screenFrame.src);
+
+                this._background.add(this.info.screenBackground.ref);
+                this._midground.add(this.textGraphic.ref);
+                this._forground.add(this.info.screenFrame.ref);
 
                 this._lockButtons = game.add.group();
 
                 this._lockButtons.x = this.info.left + this._lockPattern.left;
                 this._lockButtons.y = this.info.top + this._lockPattern.top;
 
-                this._drawLockScreen(game);
+                this._midground.add(this._lockButtons);
+            },
 
-                var text = game.add.sprite(this._lockPattern.textX, this._lockPattern.textY, this.textGraphic.key);
-                text.scale = this.textGraphic.scale;
-                game.add.sprite(0, 0, this.info.key, this.info.src);
-            }, 
-
-            _drawLockScreen: function (game) {
+            _createLockButtons: function (game) {
                 if (this._lockPattern == null) {
                     return null;
                 }
@@ -173,8 +208,51 @@
                         this._lockButtons.add(button);
                     }
                 }
+
+                this._lockButtons.setAll('inputEnabled', true);
+                this._lockButtons.callAll('events.onInputDown.add', 'events.onInputDown', ButtonScreenManager._buttonClicked);
+            },
+
+            _buttonClicked: function (item) {
+                if (item._active) {
+                    item.deactivate();
+                }
+                else {
+                    item.activate();
+                }
             }
         }
+
+        //*******************************************************************************************************************************************************
+        //                   Game Resources - Debug Control
+        //*******************************************************************************************************************************************************
+        //var DebugControlScreenManager = {
+        //    info: {
+        //        debugContent: 'debug-controls'
+        //    },
+
+        //    create: function () {
+        //        $('body').append('<div class="debug-controls"></div>');
+        //    },
+
+        //    setupControls: function (object, params) {
+        //        if (params && params.length > 0) {
+        //            $('.' + this.info.debugContent).empty();
+        //            var ui = {};
+        //            for (var i = 0; i < params.length; ++i) {
+        //                if(params[i] && typeof(params[i]) == 'string' && object[params[i]])
+        //                {
+        //                    $('.' + this.info.debugContent).append('<input type="range" title="' + params[i] + '" value="' + object[params[i]] + '" id="' + params[i] + '"  /><br/>');
+        //                    ui["#" + params[i]] = params[i];
+        //                }
+        //            }
+
+        //            $('.' + this.info.debugContent).my({ ui: ui }, object);
+        //        }
+        //    }
+        //}
+
+
     </script>
 </body>
 </html>
