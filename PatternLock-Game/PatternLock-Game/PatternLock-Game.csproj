@@ -60,6 +60,10 @@
     <Content Include="CanvasPage.html" />
     <Content Include="default.html" />
     <Content Include="Resources\ButtonsSpriteSheet.png" />
+    <Content Include="Resources\cellphone.png" />
+    <Content Include="Resources\phoneText.png" />
+    <Content Include="Script\jquerymy-1.1.4.js" />
+    <Content Include="Script\jquerymy-1.1.4.min.js" />
     <Content Include="Script\PatternLockGame.js" />
     <Content Include="Script\phaser.js" />
     <Content Include="Script\phaser.min.js" />

@@ -3,6 +3,7 @@
 <head>
     <title>Pattern Lock Game V 2.0</title>
     <script src="Script/phaser.js"></script>
+    <script src="Script/jquerymy-1.1.4.js"></script>
 </head>
 <body>
     <script>
@@ -52,7 +53,7 @@
             },
 
             button: function (game, x, y, xpad, ypad) {
-                Phaser.Sprite.call(this, game, x * (GameButtonManager.info.width + xpad) + xpad, y * (GameButtonManager.info.height + ypad) + ypad, GameButtonManager.info.key, GameButtonManager.buttonState.Idle);
+                Phaser.Sprite.call(this, game, x * (GameButtonManager.info.width + xpad), y * (GameButtonManager.info.height + ypad), GameButtonManager.info.key, GameButtonManager.buttonState.Idle);
                 this._active = false;
                 this._pos = { x: x, y: y };
             }
@@ -83,6 +84,7 @@
             info: {
                 key: 'background',
                 src: 'Resources/cellphone.png',
+                
                 height: 492,
                 width: 308,
                 top: 69,
@@ -90,25 +92,42 @@
                 bottom: 393,
                 right: 283
             },
+            textGraphic: {
+                key: 'swipeText',
+                src: 'Resources/phoneText.png',
+                scale: new Phaser.Point(0.75, 0.75)
+            },
             
             lockPatterns: {
                 small3x3: {
                     v: 3,
                     h: 3,
                     vpad: 10,
-                    hpad: 10
+                    hpad: 10,
+                    top: 100,
+                    left: 10,
+                    textX: 100,
+                    textY: 100
                 },
-                medium5x5: {
-                    v: 5,
-                    h: 5,
+                medium4x4: {
+                    v: 4,
+                    h: 4,
                     vpad: 10,
-                    hpad: 10
+                    hpad: 10,
+                    top: 100,
+                    left: 10,
+                    textX: 100,
+                    textY: 100
                 },
                 odd5x3: {
                     v: 5,
                     h: 3,
                     vpad: 10,
-                    hpad: 10
+                    hpad: 10,
+                    top: 100,
+                    left: 10,
+                    textX: 100,
+                    textY: 100
                 }
             },
 
@@ -117,13 +136,21 @@
 
             preload: function (game) {
                 game.load.image(this.info.key, this.info.src);
+                game.load.image(this.textGraphic.key, this.textGraphic.src);
             },
 
             create: function (game) {
-                this._lockButtons = game.add.group();
                 this._lockPattern = this.lockPatterns.small3x3;
+
+                this._lockButtons = game.add.group();
+
+                this._lockButtons.x = this.info.left + this._lockPattern.left;
+                this._lockButtons.y = this.info.top + this._lockPattern.top;
+
                 this._drawLockScreen(game);
-                this._lockButtons.
+
+                var text = game.add.sprite(this._lockPattern.textX, this._lockPattern.textY, this.textGraphic.key);
+                text.scale = this.textGraphic.scale;
                 game.add.sprite(0, 0, this.info.key, this.info.src);
             }, 
 
@@ -131,6 +158,7 @@
                 if (this._lockPattern == null) {
                     return null;
                 }
+
                 var vp = this._lockPattern.vpad || 0;
                 var hp = this._lockPattern.hpad || 0;
 
