@@ -12,23 +12,21 @@
         var game = new Phaser.Game(308, 492, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
         function preload() {
-            ButtonScreenManager.preload(game);
-            GameButtonManager.preload(game);
+            DeviceScreenManager.preload(game);
+            GameButtonFactory.preload(game);
         }
 
         function create() {
-            ButtonScreenManager.create(game);
+            DeviceScreenManager.create(game);
         }
 
         function update() {
         }
 
-
-
         //*******************************************************************************************************************************************************
         //                   Game Resources - Buttons: Manager for all button related activities.
         //*******************************************************************************************************************************************************
-        var GameButtonManager = {
+        var GameButtonFactory = {
             info: {
                 key: 'buttons',
                 src: 'Resources/ButtonsSpriteSheet.png',
@@ -54,22 +52,22 @@
             },
 
             button: function (game, x, y, xpad, ypad) {
-                Phaser.Sprite.call(this, game, x * (GameButtonManager.info.width + xpad), y * (GameButtonManager.info.height + ypad), GameButtonManager.info.key, GameButtonManager.buttonState.Idle);
+                Phaser.Sprite.call(this, game, x * (GameButtonFactory.info.width + xpad), y * (GameButtonFactory.info.height + ypad), GameButtonFactory.info.key, GameButtonFactory.buttonState.Idle);
                 this._active = false;
                 this._pos = { x: x, y: y };
             }
         }
 
-        var p = GameButtonManager.button.prototype = Object.create(Phaser.Sprite.prototype);
-        GameButtonManager.button.prototype.constructor = GameButtonManager.button;
+        var p = GameButtonFactory.button.prototype = Object.create(Phaser.Sprite.prototype);
+        GameButtonFactory.button.prototype.constructor = GameButtonFactory.button;
         
         p.activate = function () {
-            this.frame = GameButtonManager.buttonState.Active;
+            this.frame = GameButtonFactory.buttonState.Active;
             this._active = true;
         }
 
         p.deactivate = function () {
-            this.frame = GameButtonManager.buttonState.Idle;
+            this.frame = GameButtonFactory.buttonState.Idle;
             this._active = false;
         }
 
@@ -78,20 +76,16 @@
         }
 
         //*******************************************************************************************************************************************************
-        //                   Game Resources - ButtonScreenManager
+        //                   Game Resources - DeviceScreenManager
         //*******************************************************************************************************************************************************
-
-        var ButtonScreenManager = {
+        // The Device Screen Manager deals with rendering the main game display, such as the border box, and acts as the device, loading Touch Screen Displays
+        // into the device layers.
+        var DeviceScreenManager = {
             info: {
                 screenFrame: {
                     ref: null,
                     key: 'frame',
                     src: 'Resources/cellphone.png',
-                },
-                screenBackground: {
-                    ref: null,
-                    key: 'screenBackground',
-                    src: 'Resources/background_1.png'
                 },
                 
                 height: 492,
@@ -101,13 +95,57 @@
                 bottom: 393,
                 right: 283
             },
+
+            _background: null,
+            _midground: null,
+            _forground: null,
+
+            preload: function (game) {
+                game.load.image(this.info.screenFrame.key, this.info.screenFrame.src);
+            },
+
+            create: function (game) {
+                this._background = game.add.group();
+                this._midground = game.add.group();
+                this._forground = game.add.group();
+
+                this._drawBaseGraphics();
+            }, 
+
+            _drawBaseGraphics: function (game) {
+                this.info.screenFrame.ref = game.add.sprite(0, 0, this.info.screenFrame.key, this.info.screenFrame.src);
+                this._forground.add(this.info.screenFrame.ref);
+            },
+
+            update: function () {
+                
+            }
+        }
+        //*******************************************************************************************************************************************************
+        //                   Game Manager - Touch Screens
+        //*******************************************************************************************************************************************************
+
+        //     Game Resource - Screen displays
+        //-------------------------------------------------------------------------------------------------------------------------------------------------------
+        var gameScreenDisplay = {
+            info: {
+                top: 69,
+                left: 27,
+            },
+
+            screenBackground: {
+                ref: null,
+                key: 'screenBackground',
+            src: 'Resources/background_1.png'
+            },
+
             textGraphic: {
                 key: 'swipeText',
                 src: 'Resources/phoneText.png',
                 scale: new Phaser.Point(0.75, 0.75),
                 ref: null
             },
-            
+
             lockPatterns: {
                 small3x3: {
                     v: 3,
@@ -140,50 +178,47 @@
                     textY: 100
                 }
             },
-            
-            _background: null,
-            _midground: null,
-            _forground: null,
 
             _lockButtons: null,
             _lockPattern: null,
 
             preload: function (game) {
-                game.load.image(this.info.screenBackground.key, this.info.screenBackground.src);
-                game.load.image(this.info.screenFrame.key, this.info.screenFrame.src);
+                game.load.image(this.screenBackground.key, this.screenBackground.src);
                 game.load.image(this.textGraphic.key, this.textGraphic.src);
             },
 
             create: function (game) {
-
                 this._lockPattern = this.lockPatterns.small3x3;
-
-                this._drawBaseGraphics();
-
+                this._lockButtons = game.add.group();
                 this._createLockButtons(game);
-            }, 
-
-            _drawBaseGraphics: function () {
-
-                this._background = game.add.group();
-                this._midground = game.add.group();
-                this._forground = game.add.group();
 
                 this.info.screenBackground.ref = game.add.sprite(this.info.left, this.info.top, this.info.screenBackground.key, this.info.screenBackground.src);
                 this.textGraphic.ref = game.add.sprite(this._lockPattern.textX, this._lockPattern.textY, this.textGraphic.key);
                 this.textGraphic.ref.scale = this.textGraphic.scale;
-                this.info.screenFrame.ref = game.add.sprite(0, 0, this.info.screenFrame.key, this.info.screenFrame.src);
-
-                this._background.add(this.info.screenBackground.ref);
-                this._midground.add(this.textGraphic.ref);
-                this._forground.add(this.info.screenFrame.ref);
-
-                this._lockButtons = game.add.group();
 
                 this._lockButtons.x = this.info.left + this._lockPattern.left;
                 this._lockButtons.y = this.info.top + this._lockPattern.top;
+            },
+            
+            // returns the assets which belong in the foreground
+            getForeground: function(game) {
+            },
 
-                this._midground.add(this._lockButtons);
+            // returns the assets which belong in the foreground
+            getMidground: function(game) {
+                var display = game.add.group();
+                display.add(this.textGraphic.ref);
+                display.add(this._lockButtons);
+                return display;
+            },
+
+            // returns the assets which belong in the foreground
+            getBackground: function(game) {
+                this._background.add(this.info.screenBackground.ref);
+            },
+
+            update: function () {
+
             },
 
             _createLockButtons: function (game) {
@@ -196,10 +231,10 @@
 
                 for (var i = 0; i < this._lockPattern.v; ++i) {
                     for (var j = 0; j < this._lockPattern.h; ++j) {
-                        var button = new GameButtonManager.button(game, j, i, vp, hp);
+                        var button = new GameButtonFactory.button(game, j, i, vp, hp);
 
                         //if (((i * w) + j) % 2 == 0) {
-                        //    button.changeState(GameButtonManager.buttonState.Active);
+                        //    button.changeState(GameButtonFactory.buttonState.Active);
                         //}
 
                         this._lockButtons.add(button);
@@ -207,7 +242,7 @@
                 }
 
                 this._lockButtons.setAll('inputEnabled', true);
-                this._lockButtons.callAll('events.onInputDown.add', 'events.onInputDown', ButtonScreenManager._buttonClicked);
+                this._lockButtons.callAll('events.onInputDown.add', 'events.onInputDown', gameScreenDisplay._buttonClicked);
             },
 
             _buttonClicked: function (item) {
@@ -220,9 +255,43 @@
             }
         }
 
-        ////*******************************************************************************************************************************************************
-        ////                   Game Resources - Debug Control
-        ////*******************************************************************************************************************************************************
+        //-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        var TouchScreenDisplays = {
+
+            // more scenes here for title screen, pause etc...
+            screenDisplays: [gameScreenDisplay],
+
+            _dirtyDisplay: true,
+
+            _CurrentDisplay: null,
+            
+            _background: null,
+            _midground: null,
+            _forground: null,
+
+            preload: function (game) {
+                var i = 0;
+                while (i < screenDisplays.length) {
+                    screenDisplays[i].preload(game);
+                    ++i;
+                }
+            },
+
+            create: function (game) {
+                _CurrentDisplay = screenDisplays[0];
+                _CurrentDisplay.create(game);
+            },
+
+            getRefresh: function() {
+                return this._dirtyDisplay;
+            }
+
+        }
+
+        //*******************************************************************************************************************************************************
+        //                   Game Resources - Debug Control
+        //*******************************************************************************************************************************************************
         //var DebugControlScreenManager = {
         //    info: {
         //        debugContent: 'debug-controls'
