@@ -17,7 +17,6 @@
         }
 
         function create() {
-            //DebugControlScreenManager.create();
             ButtonScreenManager.create(game);
         }
 
@@ -162,8 +161,6 @@
                 this._drawBaseGraphics();
 
                 this._createLockButtons(game);
-
-                //DebugControlScreenManager.setupControls(this._lockButtons, ['x', 'y']);
             }, 
 
             _drawBaseGraphics: function () {
@@ -223,9 +220,9 @@
             }
         }
 
-        //*******************************************************************************************************************************************************
-        //                   Game Resources - Debug Control
-        //*******************************************************************************************************************************************************
+        ////*******************************************************************************************************************************************************
+        ////                   Game Resources - Debug Control
+        ////*******************************************************************************************************************************************************
         //var DebugControlScreenManager = {
         //    info: {
         //        debugContent: 'debug-controls'
@@ -242,12 +239,12 @@
         //            for (var i = 0; i < params.length; ++i) {
         //                if(params[i] && typeof(params[i]) == 'string' && object[params[i]])
         //                {
-        //                    $('.' + this.info.debugContent).append('<input type="range" title="' + params[i] + '" value="' + object[params[i]] + '" id="' + params[i] + '"  /><br/>');
+        //                    $('.' + this.info.debugContent).append('<input type="number" title="' + params[i] + '" value="' + object[params[i]] + '" id="' + params[i] + '"  /><br/>');
         //                    ui["#" + params[i]] = params[i];
         //                }
         //            }
-
-        //            $('.' + this.info.debugContent).my({ ui: ui }, object);
+        //            debugger;
+        //            //$('.' + this.info.debugContent).my({ ui: ui }, object);
         //        }
         //    }
         //}
