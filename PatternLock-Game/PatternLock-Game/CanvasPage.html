@@ -14,6 +14,7 @@
         function preload() {
             DeviceScreenManager.preload(game);
             GameButtonFactory.preload(game);
+            TouchScreenDisplays.preload(game);
         }
 
         function create() {
@@ -110,6 +111,9 @@
                 this._forground = game.add.group();
 
                 this._drawBaseGraphics(game);
+
+                TouchScreenDisplays.create(game);
+                this._midground.add(TouchScreenDisplays.getFrame());
             }, 
 
             _drawBaseGraphics: function (game) {
@@ -125,6 +129,12 @@
         //                   Game Manager - Touch Screens
         //*******************************************************************************************************************************************************
 
+        //var tempalteDisplay = {
+        //    preload: function (game) { },
+        //    create: function (game) { },
+        //    getDisplay: function (game) { }
+        //}
+
         //     Game Resource - Screen displays
         //-------------------------------------------------------------------------------------------------------------------------------------------------------
         var gameScreenDisplay = {
@@ -136,7 +146,7 @@
             screenBackground: {
                 ref: null,
                 key: 'screenBackground',
-            src: 'Resources/background_1.png'
+                src: 'Resources/background_1.png'
             },
 
             textGraphic: {
@@ -150,9 +160,9 @@
                 small3x3: {
                     v: 3,
                     h: 3,
-                    vpad: 10,
-                    hpad: 10,
-                    top: 166,
+                    vpad: 20,
+                    hpad: 20,
+                    top: 130,
                     left: 66,
                     textX: 65,
                     textY: 100
@@ -192,7 +202,7 @@
                 this._lockButtons = game.add.group();
                 this._createLockButtons(game);
 
-                this.info.screenBackground.ref = game.add.sprite(this.info.left, this.info.top, this.info.screenBackground.key, this.info.screenBackground.src);
+                this.screenBackground.ref = game.add.sprite(this.info.left, this.info.top, this.screenBackground.key, this.screenBackground.src);
                 this.textGraphic.ref = game.add.sprite(this._lockPattern.textX, this._lockPattern.textY, this.textGraphic.key);
                 this.textGraphic.ref.scale = this.textGraphic.scale;
 
@@ -201,24 +211,12 @@
             },
             
             // returns the assets which belong in the foreground
-            getForeground: function(game) {
-            },
-
-            // returns the assets which belong in the foreground
-            getMidground: function(game) {
+            getDisplay: function(game) {
                 var display = game.add.group();
+                display.add(this.screenBackground.ref);
                 display.add(this.textGraphic.ref);
                 display.add(this._lockButtons);
                 return display;
-            },
-
-            // returns the assets which belong in the foreground
-            getBackground: function(game) {
-                return this.info.screenBackground.ref;
-            },
-
-            getFrame: function () {
-
             },
 
             update: function () {
@@ -261,6 +259,23 @@
 
         //-------------------------------------------------------------------------------------------------------------------------------------------------------
 
+        var titleScreenDisplay = {
+            preload: function (game) {
+
+            },
+
+            create: function (game) {
+
+            },
+
+            getDisplay: function (game) {
+
+            }
+        }
+
+        //-------------------------------------------------------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------------------------------------------------
+
         var TouchScreenDisplays = {
 
             // more scenes here for title screen, pause etc...
@@ -281,23 +296,29 @@
             },
 
             create: function (game) {
-                this._CurrentDisplay = screenDisplays[0];
+                this._CurrentDisplay = this.screenDisplays[0];
                 this._CurrentDisplay.create(game);
 
                 this._frame = game.add.group();
+                this.setupGraphics(game);
             },
 
-            setupGraphics: function () {
+            setupGraphics: function (game) {
+                this._frame.removeAll();
+                this._frame.add(this._CurrentDisplay.getDisplay(game));
+            },
 
+            getFrame: function() {
+                return this._frame;
             },
 
             getRefresh: function () {
                 return this._dirtyDisplay;
             },
 
-            update: function () {
+            update: function (game) {
                 if (this._dirtyDisplay) {
-                    this.setupGraphics();
+                    this.setupGraphics(game);
                 }
             }
         }
