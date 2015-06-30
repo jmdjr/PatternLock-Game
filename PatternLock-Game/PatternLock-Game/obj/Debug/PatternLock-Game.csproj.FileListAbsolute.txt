@@ -1,0 +1,5 @@
+C:\Users\johndavis\Documents\GitHub\PatternLock-Game\PatternLock-Game\PatternLock-Game\bin\PatternLock-Game.dll
+C:\Users\johndavis\Documents\GitHub\PatternLock-Game\PatternLock-Game\PatternLock-Game\bin\PatternLock-Game.pdb
+C:\Users\johndavis\Documents\GitHub\PatternLock-Game\PatternLock-Game\PatternLock-Game\obj\Debug\PatternLock-Game.csprojResolveAssemblyReference.cache
+C:\Users\johndavis\Documents\GitHub\PatternLock-Game\PatternLock-Game\PatternLock-Game\obj\Debug\PatternLock-Game.dll
+C:\Users\johndavis\Documents\GitHub\PatternLock-Game\PatternLock-Game\PatternLock-Game\obj\Debug\PatternLock-Game.pdb
