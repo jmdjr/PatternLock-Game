@@ -449,7 +449,7 @@
             p._gameDebug = function () { return this._gameBoard().find('.debug-box'); }
 
             p.gatherNodeList = function () {
-                this.nodeElementsList = this._nodeElements();
+                this.nodeElementsList = this._gameButtons();
 
                 var index = 0;
                 while (index < this.nodeElementsList.length) {
@@ -462,10 +462,6 @@
 
                     ++index;
                 }
-            }
-
-            p._nodeElements = function () {
-                return this._gameButtons();
             }
 
             p.generatePath = function () {

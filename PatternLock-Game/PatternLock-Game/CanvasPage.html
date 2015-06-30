@@ -11,6 +11,20 @@
     <script>
         var game = new Phaser.Game(308, 492, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
+        WebFontConfig = {
+
+            //  'active' means all requested fonts have finished loading
+            //  We set a 1 second delay before calling 'createText'.
+            //  For some reason if we don't the browser cannot render the text the first time it's created.
+            //active: function () { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
+
+            //  The Google Fonts we want to load (specify as many as you like in the array)
+            google: {
+                families: ['Audiowide']
+            }
+
+        };
+
         function preload() {
             DeviceScreenManager.preload(game);
             GameButtonFactory.preload(game);
@@ -23,6 +37,7 @@
         }
 
         function update() {
+            DeviceScreenManager.update(game);
         }
 
         //*******************************************************************************************************************************************************
@@ -122,8 +137,8 @@
                 this._forground.add(this.info.screenFrame.ref);
             },
 
-            update: function () {
-                
+            update: function (game) {
+                TouchScreenDisplays.update(game);
             }
         }
         //*******************************************************************************************************************************************************
@@ -138,12 +153,135 @@
 
         //     Game Resource - Screen displays
         //-------------------------------------------------------------------------------------------------------------------------------------------------------
-        var gameScreenDisplay = {
-            info: {
-                top: 69,
-                left: 27,
+
+        var titleScreenDisplay = {
+            _created: false,
+            Logo: {
+                key: 'logoImage',
+                src: 'Resources/FlipStickLogo.png',
+                frames: 29,
+                height: 600,
+                width: 120,
+                rate: 24,
+                ref: null,
+                top: 0,
+                left: 85,
+                scale: new Phaser.Point(0.75, 0.50)
             },
 
+            displayTimerRef: null,
+            _displayGroup: null,
+
+            preload: function (game) {
+                game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+                game.load.spritesheet(this.Logo.key, this.Logo.src, this.Logo.width, this.Logo.height);
+            },
+
+            create: function (game) {
+                game.stage.setBackgroundColor(0x33CC33);
+                this.Logo.ref = game.make.sprite(this.Logo.left, this.Logo.top, this.Logo.key);
+                this.Logo.ref.scale = this.Logo.scale;
+                this.Logo.ref.animations.add('flip', null, this.Logo.rate, false);
+                this.Logo.ref.animations.play('flip');
+
+                this._displayGroup = game.make.group();
+                this._displayGroup.add(this.Logo.ref);
+
+                this.displayTimerRef = game.time.create();
+                this.displayTimerRef.add(1000, this._createLogoTitle, this, game);
+                this.displayTimerRef.add(3000, this._transition, this);
+                this.displayTimerRef.start();
+                this._created = true;
+            },
+
+            _createLogoTitle: function (game) {
+                var text = game.make.text(128, 50, "\\ Flip Stick Games /");
+
+                text.anchor.set(0.5);
+                text.align = 'center';
+                text.font = 'Audiowide';
+                text.fontWeight = 'bold';
+                text.fontSize = 20;
+                text.fill = '#000000';
+                this._displayGroup.add(text);
+            },
+
+            _transition: function () {
+                TouchScreenDisplays.nextDisplay();
+            },
+
+            getDisplay: function (game) {
+                return this._displayGroup;
+            },
+
+            update: function (game) {
+
+            }
+        }
+
+        //-------------------------------------------------------------------------------------------------------------------------------------------------------
+        // 
+        var gameLogic = {
+            defaults: {
+                rows: 3,
+                columns: 3,
+                minimumSolution: 4,
+                maximumSolution: 9,
+                maxTries: 20,
+                SolutionLength: 4,
+                showPatternRelativePosition: true,
+                directions: [
+                    { x: 0, y: -1 },    //north
+                    { x: 0, y: 1 },     //south
+                    { x: 1, y: 0 },     //east
+                    { x: -1, y: 0 }     //west
+                ],
+                compass: {
+                    north: 0,
+                    south: 1,
+                    east: 2,
+                    west: 3
+                },
+                states: {
+                    correct: 'correct',
+                    before: 'before',
+                    after: 'after',
+                    close: 'close',
+                    wrong: 'wrong'
+                }
+            },
+
+            GameNode: function (x, y, state) {
+                this.x = x || 0;
+                this.y = y || 0;
+                this.state = state || defaults.states.wrong;
+
+                this.toString = function () { return '(' + this.x + ", " + '' + this.y + ')'; }
+            },
+
+            activeList: [],
+            solutionList: [],
+            userList: [],
+            historyList: [],
+            nodeElementsList: [],
+
+            _gatherNodeList: function () {
+                var index = 0;
+                while (index < this.nodeElementsList.length) {
+                    var item = this.nodeElementsList[index];
+                    var x = index % this.defaults.columns;
+                    var y = Math.floor(index / this.defaults.rows);
+                    var node = new GameNode(x, y);
+                    $(item).data('node', node);
+
+                    ++index;
+                }
+            },
+        }
+
+        //-------------------------------------------------------------------------------------------------------------------------------------------------------
+        var gameScreenDisplay = {
+            _created: false,
             screenBackground: {
                 ref: null,
                 key: 'screenBackground',
@@ -157,6 +295,7 @@
                 ref: null
             },
 
+            
             lockPatterns: {
                 small3x3: {
                     v: 3,
@@ -189,39 +328,57 @@
                     textY: 100
                 }
             },
-
+            
             _lockButtons: null,
-            _lockPattern: null,
+            _display: null,
 
             preload: function (game) {
                 game.load.image(this.screenBackground.key, this.screenBackground.src);
                 game.load.image(this.textGraphic.key, this.textGraphic.src);
             },
 
+            _initGame: function () {
+                gameLogic.defaults.cells = this._lockPattern.v * this._lockPattern.h;
+                gameLogic.defaults.rows = this._lockPattern.v;
+                gameLogic.defaults.columns = this._lockPattern.h;
+                gameLogic.nodeElementsList = this._lockButtons;
+            },
+
+
+            _nodeElements: function () {
+                return this._lockButtons;
+            },
+
             create: function (game) {
                 this._lockPattern = this.lockPatterns.small3x3;
-                this._lockButtons = game.add.group();
+                this._lockButtons = game.make.group();
                 this._createLockButtons(game);
 
-                this.screenBackground.ref = game.add.sprite(this.info.left, this.info.top, this.screenBackground.key, this.screenBackground.src);
-                this.textGraphic.ref = game.add.sprite(this._lockPattern.textX, this._lockPattern.textY, this.textGraphic.key);
-                this.textGraphic.ref.scale = this.textGraphic.scale;
 
-                this._lockButtons.x = this.info.left + this._lockPattern.left;
-                this._lockButtons.y = this.info.top + this._lockPattern.top;
+                this.screenBackground.ref = game.make.sprite(0, 0, this.screenBackground.key);
+                //this.textGraphic.ref = game.make.sprite(this._lockPattern.textX, this._lockPattern.textY, this.textGraphic.key);
+                //this.textGraphic.ref.scale = this.textGraphic.scale;
+
+                this._lockButtons.x = this._lockPattern.left;
+                this._lockButtons.y = this._lockPattern.top;
+
+                this._display = game.make.group();
+
+                this._display.add(this.screenBackground.ref);
+                //this._display.add(this.textGraphic.ref);
+                this._display.add(this._lockButtons);
+
+                //this._initGame();
+
+                this._created = true;
             },
             
             // returns the assets which belong in the foreground
             getDisplay: function(game) {
-                var display = game.add.group();
-                display.add(this.screenBackground.ref);
-                display.add(this.textGraphic.ref);
-                display.add(this._lockButtons);
-                return display;
+                return this._display;
             },
 
-            update: function () {
-
+            update: function (game) {
             },
 
             _createLockButtons: function (game) {
@@ -244,8 +401,8 @@
                     }
                 }
 
-                this._lockButtons.setAll('inputEnabled', true);
-                this._lockButtons.callAll('events.onInputDown.add', 'events.onInputDown', gameScreenDisplay._buttonClicked);
+                //this._lockButtons.setAll('inputEnabled', true);
+                //this._lockButtons.callAll('events.onInputDown.add', 'events.onInputDown', gameScreenDisplay._buttonClicked);
             },
 
             _buttonClicked: function (item) {
@@ -258,29 +415,20 @@
             }
         }
 
-        //-------------------------------------------------------------------------------------------------------------------------------------------------------
-
-        var titleScreenDisplay = {
-            preload: function (game) {
-
-            },
-
-            create: function (game) {
-
-            },
-
-            getDisplay: function (game) {
-
-            }
-        }
 
         //-------------------------------------------------------------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------------------------------------------------
 
         var TouchScreenDisplays = {
+            info: {
+                top: 69,
+                left: 27,
+            },
 
             // more scenes here for title screen, pause etc...
-            screenDisplays: [gameScreenDisplay],
+            screenDisplays: [titleScreenDisplay, gameScreenDisplay],
+            
+            _displayIndex: 0,
 
             _dirtyDisplay: true,
 
@@ -297,29 +445,49 @@
             },
 
             create: function (game) {
-                this._CurrentDisplay = this.screenDisplays[0];
-                this._CurrentDisplay.create(game);
+                this._CurrentDisplay = this.screenDisplays[this._displayIndex];
 
                 this._frame = game.add.group();
+                this._frame.x = this.info.left;
+                this._frame.y = this.info.top;
+
                 this.setupGraphics(game);
             },
 
             setupGraphics: function (game) {
                 this._frame.removeAll();
+                this._CurrentDisplay.create(game);
                 this._frame.add(this._CurrentDisplay.getDisplay(game));
+                this._dirtyDisplay = false;
             },
 
             getFrame: function() {
                 return this._frame;
             },
 
-            getRefresh: function () {
+            shouldRefresh: function () {
                 return this._dirtyDisplay;
             },
 
+            setDisplay: function (index) {
+                if (0 < index && index < this.screenDisplays.length) {
+                    this._CurrentDisplay = this.screenDisplays[index];
+                    this._displayIndex = index;
+                    this._dirtyDisplay = true;
+                }
+            },
+            
+            nextDisplay: function () {
+                this.setDisplay(this._displayIndex + 1);
+            },
+
             update: function (game) {
-                if (this._dirtyDisplay) {
+                if (this.shouldRefresh()) {
                     this.setupGraphics(game);
+                }
+
+                if (this._CurrentDisplay.update) {
+                    this._CurrentDisplay.update();
                 }
             }
         }
