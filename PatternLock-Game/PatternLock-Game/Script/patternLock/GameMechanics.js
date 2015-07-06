@@ -1,6 +1,5 @@
 ﻿define([], function () {
-
-    var gameLogic = {
+    return {
         defaults: {
             rows: 3,
             columns: 3,
@@ -58,6 +57,10 @@
                 ++index;
             }
         },
+
+        initialize: function () {
+            this._gatherNodeList();
+        }
     }
 });
 
@@ -446,18 +449,6 @@ p.replayPath = function (historyIndex) {
         this.drawPaths(this.historyList[historyIndex], this._gameUserLines());
         this.checkForWin(this.historyList[historyIndex], this.solutionList);
     }
-}
-
-var GameNode = function (x, y, state) {
-    this.x = x || 0;
-    this.y = y || 0;
-    this.state = state || defaults.states.wrong;
-
-    this.toString = function () { return '(' + this.x + ", " + '' + this.y + ')'; }
-}
-
-$.fn.PatternLockGame = function (options) {
-    $(this).each(function () { $(this).data('calendar', new PatternLockGame(options, this)); });
 }
 
 */

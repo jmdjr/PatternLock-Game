@@ -7,7 +7,7 @@ define(['screen/Game', 'screen/Logo'], function (Game, Logo) {
         },
 
         // more scenes here for title screen, pause etc...
-        screenDisplays: [Game],
+        screenDisplays: [/*Logo,*/ Game],
 
         _displayIndex: 0,
 
@@ -66,9 +66,8 @@ define(['screen/Game', 'screen/Logo'], function (Game, Logo) {
             if (this.shouldRefresh()) {
                 this.setupGraphics(game);
             }
-
             if (this._CurrentDisplay.update) {
-                this._CurrentDisplay.update();
+                this._CurrentDisplay.update(game);
             }
         }
     }

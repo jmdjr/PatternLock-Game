@@ -1,5 +1,5 @@
 ﻿
-define(['game/GameButtonFactory'], function (buttonFactory) {
+define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory, gameLogic) {
     return {
         _created: false,
         screenBackground: {
@@ -79,6 +79,11 @@ define(['game/GameButtonFactory'], function (buttonFactory) {
 
             this._createLockButtons(game);
             this._created = true;
+
+            this._initGame();
+
+            this._lockButtons.setAll('inputEnabled', true);
+
         },
 
         // returns the assets which belong in the foreground
@@ -87,6 +92,19 @@ define(['game/GameButtonFactory'], function (buttonFactory) {
         },
 
         update: function (game) {
+            this._lockButtons.forEach(function (button) {
+                if (button.input.justPressed()) {
+                    // something just pressed down here :D
+                }
+            }, this, false, {});
+        },
+
+        _buttonDown: function(lockButton) {
+            debugger;
+        },
+        
+        _buttonOver: function (lockButton) {
+            debugger;
         },
 
         _createLockButtons: function (game) {
