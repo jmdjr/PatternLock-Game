@@ -46,7 +46,7 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
         _lockButtons: null,
         _display: null,
-
+        
         preload: function (game) {
             game.load.image(this.screenBackground.key, this.screenBackground.src);
         },
@@ -56,6 +56,8 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
             gameLogic.defaults.rows = this._lockPattern.v;
             gameLogic.defaults.columns = this._lockPattern.h;
             gameLogic.nodeElementsList = this._lockButtons;
+
+            gameLogic.initialize();
         },
 
         _nodeElements: function () {
@@ -92,19 +94,21 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         update: function (game) {
-            this._lockButtons.forEach(function (button) {
-                if (button.input.justPressed()) {
-                    // something just pressed down here :D
-                }
-            }, this, false, {});
+            //debugger;
+            //this._lockButtons.forEach(function (button) {
+                
+            //}, this, false, {});
         },
 
         _buttonDown: function(lockButton) {
-            debugger;
         },
         
         _buttonOver: function (lockButton) {
             debugger;
+        },
+
+        _buttonUp: function (lockButton) {
+
         },
 
         _createLockButtons: function (game) {

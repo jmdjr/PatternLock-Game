@@ -25,8 +25,6 @@ define(['phaser'], function () {
             Under: 6
         },
 
-        node: null,
-
         preload: function (game) {
             game.load.spritesheet(this.info.key, this.info.src, this.info.height, this.info.width, 7);
         },
@@ -38,6 +36,7 @@ define(['phaser'], function () {
             this._overlay = game.make.sprite(0, 0, GameButtonFactory.info.key, GameButtonFactory.overlayState.Correct);
             this.setStatus(Math.round(Math.random() * 4 + 2));
             this._overlay.scale = new Phaser.Point();
+            this._status = GameButtonFactory.overlayState.Correct;
             this.addChild(this._overlay);
             this.anchor.set(0.5);
             this._overlay.anchor.set(0.5);
@@ -63,6 +62,7 @@ define(['phaser'], function () {
         overlayState = GameButtonFactory.overlayState;
         if (overlayState.Correct <= status && status < overlayState.Under) {
             this._overlay.frame = status;
+            this._status = status;
         }
     }
 
@@ -75,7 +75,18 @@ define(['phaser'], function () {
     }
 
     p.update = function () {
-
+        if (this.input.justPressed()) {
+            //this._buttonDown(button);
+            debugger;
+        }
+        if (this.input.justOver()) {
+            //this._buttonOver(button);
+            debugger;
+        }
+        if (this.input.justReleased()) {
+            //this._buttonUp(button);
+            debugger;
+        }
     }
 
     return GameButtonFactory;

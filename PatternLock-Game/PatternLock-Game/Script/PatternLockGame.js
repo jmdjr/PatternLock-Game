@@ -1,5 +1,5 @@
 ﻿define(['game/DeviceScreen', 'game/GameButtonFactory', 'game/TouchScreenDisplayManager'], function (device, buttonFactory, touchScreen) {
-    var game = new Phaser.Game(308, 492, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+    var game = new Phaser.Game(308, 492, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
 
     function preload() {
         device.preload(game);
@@ -13,6 +13,11 @@
 
     function update() {
         device.update(game);
+    }
+
+    function render() {
+        debugger;
+        game.debug.spriteBounds();
     }
 });
 

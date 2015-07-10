@@ -32,35 +32,21 @@
             }
         },
 
-        GameNode: function (x, y, state) {
-            this.x = x || 0;
-            this.y = y || 0;
-            this.state = state || defaults.states.wrong;
-
-            this.toString = function () { return '(' + this.x + ", " + '' + this.y + ')'; }
-        },
-
-        activeList: [],
+        activeList: [],         //The active list of nodes. these nodes are currently being 
         solutionList: [],
-        userList: [],
-        nodeElementsList: [],
+        userList: [],           // The list of nodes 
+        nodeElementsList: [],   // The list of all buttons.
 
         _gatherNodeList: function () {
-            var index = 0;
-            while (index < this.nodeElementsList.length) {
-                var item = this.nodeElementsList[index];
-                var x = index % this.defaults.columns;
-                var y = Math.floor(index / this.defaults.rows);
-                var node = new GameNode(x, y);
-                item.node = node;
-
-                ++index;
-            }
         },
 
         initialize: function () {
             this._gatherNodeList();
-        }
+        },
+
+        handleNodeClick: function () {
+            // if node is the first in the 
+        },
     }
 });
 
