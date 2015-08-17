@@ -16,8 +16,9 @@
     }
 
     function render() {
-        debugger;
-        game.debug.spriteBounds();
+        //debugger;
+        //game.debug.spriteBounds();
+        touchScreen.render(game);
     }
 });
 

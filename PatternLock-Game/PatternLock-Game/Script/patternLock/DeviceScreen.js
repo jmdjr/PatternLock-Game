@@ -44,6 +44,7 @@ define(['game/TouchScreenDisplayManager'], function (touchScreen) {
         _drawBaseGraphics: function (game) {
             this.info.screenFrame.ref = game.add.sprite(0, 0, this.info.screenFrame.key, this.info.screenFrame.src);
             this._forground.add(this.info.screenFrame.ref);
+            this.info.screenFrame.ref.inputEnabled = false;
         },
 
         update: function (game) {

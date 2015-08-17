@@ -15,6 +15,16 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
                 hpad: 20,
                 top: 130,
                 left: 66,
+                //Nodes: [
+                //    { key: '00', links: ['01', '11', '10'] },
+                //    { key: '01', links: ['00', '02', '10', '11', '12'] },
+                //    { key: '02', links: ['01', '11', '12'] },
+                //    { key: '10', links: ['00', '01', '11', '20', '21'] },
+                //    { key: '11', links: ['00', '01', '02', '10', '12', '20', '21', '22'] },
+                //    { key: '12', links: ['01', '02', '11', '21', '22'] },
+                //    { key: '20', links: ['10', '11', '21'] },
+                //    { key: '21', links: ['10', '11', '12', '20', '22'] },
+                //    { key: '22', links: ['11', '12', '21'] }]
             },
             medium4x4: {
                 v: 4,
@@ -70,6 +80,7 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
             //this._controls.History = 
             this._baseGraphics.screenBackground = game.make.sprite(0, 0, this.screenBackground.key);
+            this._baseGraphics.screenBackground.inputEnabled = false;
 
             this._lockButtons.x = this._lockPattern.left;
             this._lockButtons.y = this._lockPattern.top;
@@ -100,7 +111,8 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
             //}, this, false, {});
         },
 
-        _buttonDown: function(lockButton) {
+        _buttonDown: function (lockButton) {
+            debugger;
         },
         
         _buttonOver: function (lockButton) {
@@ -125,6 +137,13 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
                     this._lockButtons.add(button);
                 }
             }
+
+        },
+
+        render: function (game) {
+            game.debug.spriteInputInfo(this._lockButtons.children[this._lockButtons.length - 1], 0, 50, 'rgba(0, 255, 0, .5)');
+            //game.debug.spriteInputInfo(this._lockButtons, 'rgba(145, 145, 0, .5)', true);
+            game.debug.spriteBounds(this._lockButtons.children[this._lockButtons.length - 1], 'rgba(0, 255, 0, .5)', true)
         }
     };
 });

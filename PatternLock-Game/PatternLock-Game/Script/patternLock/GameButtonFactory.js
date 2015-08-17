@@ -40,8 +40,14 @@ define(['phaser'], function () {
             this.addChild(this._overlay);
             this.anchor.set(0.5);
             this._overlay.anchor.set(0.5);
-            this._pos = { x: x, y: y };
             this._active = false;
+            this.inputEnabled = true;
+            this.interactive = true;
+
+            this._pos = { x: x, y: y };
+            //this.events.onInputDown.add(this._buttonDown, this);
+            //this.body.setSize(GameButtonFactory.info.width, GameButtonFactory.info.height, 0, 0);
+            //debugger;
         }
     }
 
@@ -74,19 +80,23 @@ define(['phaser'], function () {
         game.add.tween(this._overlay.scale).to({ x: 0.0, y: 0.0 }, 500, Phaser.Easing.Bounce.In, true);
     }
 
+    p._buttonDown = function (button, pointer) {
+        debugger;
+    }
+
     p.update = function () {
-        if (this.input.justPressed()) {
-            //this._buttonDown(button);
-            debugger;
-        }
-        if (this.input.justOver()) {
-            //this._buttonOver(button);
-            debugger;
-        }
-        if (this.input.justReleased()) {
-            //this._buttonUp(button);
-            debugger;
-        }
+        //if (this.input.justPressed()) {
+        //    //this._buttonDown(button);
+        //    debugger;
+        //}
+        //if (this.input.justOver()) {
+        //    //this._buttonOver(button);
+        //    debugger;
+        //}
+        //if (this.input.justReleased()) {
+        //    //this._buttonUp(button);
+        //    debugger;
+        //}
     }
 
     return GameButtonFactory;

@@ -35,6 +35,12 @@ define(['screen/Game', 'screen/Logo'], function (Game, Logo) {
             this.setupGraphics(game);
         },
 
+        render: function (game) {
+            if (this._CurrentDisplay && this._CurrentDisplay.render) {
+                this._CurrentDisplay.render(game);
+            }
+        },
+
         setupGraphics: function (game) {
             this._display.removeAll();
             this._CurrentDisplay.create(game, this);
