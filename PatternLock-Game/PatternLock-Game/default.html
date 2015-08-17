@@ -1,0 +1,774 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=0.75 maximum-scale=0.75, user-scalable=0"/>
+    <title></title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <style>
+        body {
+            margin: 10px;
+            padding: 0px;
+        }
+
+        .noselect {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        input {
+            margin-top: 10px;
+        }
+
+        .game-board {
+            width: 502px;
+            overflow: hidden;
+            position: relative;
+            display:inline-block;
+        }
+        
+        .game-details {
+            display:inline-block;
+            width:500px;
+        }
+
+        .game-frame {
+            position: relative;
+            background-color: gray;
+            padding-bottom: 50px;
+            width: 400px;
+            float: left;
+            border: 2px solid black;
+            border-top: none;
+            border-right: none;
+        }
+
+        .buttonlist {
+            list-style-type: none;
+        }
+        .buttonlist div.button {
+            cursor:default;
+        }
+        
+            ul.buttonlist > li {
+                clear: both;
+                position: relative;
+                overflow:hidden;
+                padding-bottom:10px;
+            }
+        
+        .button {
+            position: relative;
+            float: left;
+            border-radius: 25px;
+            height: 50px;
+            width: 50px;
+            border: 3px solid #151515;
+            margin-right: 50px;
+            background-color: lightgray;
+            cursor: pointer;
+        }
+        
+            .button.correct {
+                background-color: green;
+            }
+
+            .button.close {
+                background-color: #FFFFFF;
+            }
+
+            .button.before {
+                background-color: lightblue;
+            }
+
+            .button.after {
+                background-color: orange;
+            }
+
+            .button.wrong {
+                background-color: red;
+            }
+
+        .buttons-row {
+            position: relative;
+            overflow: hidden;
+            margin-left: 50px;
+            padding-top: 50px;
+        }
+
+        .header-frame {
+            padding: 10px 5px;
+            overflow:hidden;
+            background-color: lightgray;
+            border: 2px solid #151515;
+        }
+
+        .title {
+            display: inline-block;
+            width: 200px;
+        }
+
+        .score {
+            display: inline-block;
+            float: right;
+            margin-right: 10px;
+        }
+
+        .history-frame {
+            width: 96px;
+            background-color: lightgray;
+            border: 2px solid #151515;
+            border-top: none;
+            float: left;
+            height: 368px;
+            overflow: auto;
+        }
+
+        .try-replay {
+            height: 25px;
+            width: 50px;
+            margin: 5px auto;
+            padding: 0px 5px;
+            border: 2px solid black;
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        
+        
+        .solution-lines {
+            position: relative;
+            z-index: 1;
+        }
+
+        .attempt-lines {
+            position: relative;
+            z-index: 2;
+        }
+            .attempt-lines .path-line {
+                background-color: white;
+                opacity: .65;
+            }
+
+            .solution-lines .path-line {
+                background-color: rosybrown;
+                opacity: .45;
+            }
+
+        .path-line {
+            position: absolute;
+            opacity: .75;
+            height: 10px;
+            transform-origin: center left;
+            border: 2px solid #151515;
+            border-left-width: 0px;
+            border-right-width: 0px;
+            border-radius: 5px;
+        }
+
+            .path-line:last-child {
+                border-right-color: darkred;
+                border-right-width: 7px;
+            }
+
+            .path-line:first-child {
+                border-left-color: darkgreen;
+                border-left-width: 7px;
+            }
+
+        .debug-box {
+            overflow: auto;
+            height: 200px;
+            background-color: lightgray;
+            border: 2px solid #151515;
+            border-top: none;
+            display:block;
+            clear:both;
+            padding: 5px;
+        }
+
+        .game-control-button {
+            height: 18px;
+            width: 78px;
+            padding: 5px;
+            border-radius: 10px;
+            background-color: lightgray;
+            border: 2px solid #151515;
+            position: absolute;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .submit-pattern {
+            right: 10px;
+            bottom: 10px;
+        }
+
+        .clear-pattern {
+            left: 10px;
+            bottom: 10px;
+            width: 86px;
+        }
+
+        .restart-game {
+            left: 10px;
+            top: 10px;
+        }
+
+        .reveal-pattern {
+            right: 10px;
+            top: 10px;
+        }
+
+        .game-details {
+            vertical-align:top;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-board noselect">
+        <div class="header-frame">
+            <div class="title">
+                Welcome to Pattern Lock!
+            </div>
+            <div class="score"></div>
+        </div>
+        <div class="game-frame">
+            <div class="restart-game game-control-button">New Game</div>
+            <div class="reveal-pattern game-control-button">Solution</div>
+            <div class="solution-lines"></div>
+            <div class="attempt-lines"></div>
+            <div class="buttons-row">
+                <div class="button"></div>
+                <div class="button"></div>
+                <div class="button"></div>
+            </div>
+            <div class="buttons-row">
+                <div class="button"></div>
+                <div class="button"></div>
+                <div class="button"></div>
+            </div>
+            <div class="buttons-row">
+                <div class="button"></div>
+                <div class="button"></div>
+                <div class="button"></div>
+            </div>
+            <div class="submit-pattern game-control-button">Test Pattern</div>
+            <div class="clear-pattern game-control-button">Clear Pattern</div>
+        </div>
+        <div class="history-frame"></div>
+
+        <div class="debug-box"></div>
+    </div>
+    <div class="game-details"> 
+        the game of hacking your way through cell-phone lock Patterns!<br/>
+        Below you will find an arrangement of button nodes, which require a specific pattern to be unlocked.<br/>
+        <br/>
+        since this is an alpha version of the game, it is only the minimum viable product i could produce to 
+        represent the game concept.  click each dot in order to create your guessing pattern, and test it.  
+        there are extra buttons here for debugging purposes.  the win solution is to have all
+        nodes in the pattern be lit green.  at the bottom you will see a count as to how many nodes are in the pattern.
+        your target is to achieve this many green nodes to win.  
+        the color's meaning are as follows: 
+        <ul class="buttonlist">
+            <li>
+                <div class="button"></div> is the default color.  all buttons not included in your pattern will be this color.
+            </li>
+            <li>
+                <div class="button correct"></div> buttons are correct in both being in the pattern, and its position relative to other buttons.
+            </li>
+            <li>
+                <div class="button wrong"></div> buttons are not even supposed to be in the pattern.
+            </li>
+            <li>
+                <div class="button close"></div> buttons are in the pattern, but not necessarily in the correct position.
+            </li>
+            <li>
+                <div class="button before"></div> buttons are in the pattern, but were supposed to be selected earlier.
+            </li>
+            <li>
+                <div class="button after"></div> buttons are in the pattern, but were supposed to be selected later.
+            </li>
+        </ul>
+        there are still plenty of bugs in this, but it gets the game point across.
+        
+            <input type="button" onclick="simulatePath(this)" value="Simulate Path" />
+            
+<!--
+    <div class="set-difficulty"> 
+        <input type="button" onclick="switchDifficulty(this)" value="To Medium" />
+        <div class="easy"></div>
+        <div class="medium hidden"></div>
+        <div class="hard hidden"></div>
+    </div>
+-->
+    </div>
+    <script>
+        (function ($) {
+
+            var PatternLockGame = function (options, context) {
+                this.context = context;
+                $(this.context).data('gameObject', this);
+                this.initialize(options);
+            }
+
+            var p = PatternLockGame.prototype;
+
+            var defaults = {
+                columns: 3,
+                rows: 3,
+                minimumSolution: 4,
+                maximumSolution: 9,
+                maxTries: 20,
+                showPatternRelativePosition: true,
+                directions: [
+                    { x: 0, y: -1 },    //north
+                    { x: 0, y: 1 },     //south
+                    { x: 1, y: 0 },     //east
+                    { x: -1, y: 0 }     //west
+                ],
+                compass: {
+                    north: 0,
+                    south: 1,
+                    east: 2,
+                    west: 3
+                },
+                states: {
+                    correct: 'correct',
+                    before: 'before',
+                    after: 'after',
+                    close: 'close',
+                    wrong: 'wrong'
+                }
+            }
+
+            p.activeList = [];
+            p.solutionList = [];
+            p.userList = [];
+            p.historyList = [];
+            p.nodeElementsList = [];
+            p.defaults = {};
+
+            p.initialize = function (options) {
+                this.defaults = $.extend({}, defaults, options);
+                this.defaults.cells = this.defaults.columns * this.defaults.rows;
+                this.defaults.SolutionLength = this.defaults.minimumSolution;
+                this.gatherNodeList();
+
+
+                var game = this;
+                this._gameButtons().on('mousedown', function (e) {
+                    var node = $(this).data('node');
+                    if (!game._nodeIsInList(node, game.activeList) && game._testNodePossibility(node)) {
+                        game._clearNodeElementsState();
+                        game.activeList.push(node);
+                        game._gameUserLines().empty();
+                        game.drawPaths(game.activeList, game._gameUserLines());
+                    }
+                });
+
+                this._gameFrame().find('.submit-pattern').on('click', function () {
+                    if (game.activeList.length > 0) {
+                        game.userList = game.activeList;
+                        game.checkForWin(game.userList, game.solutionList);
+                        game.appendToHistory(game.userList);
+                        game._clearActiveList();
+                        game._updateScore();
+                        game._gameUserLines().empty();
+                    }
+                });
+
+                this._gameFrame().find('.reveal-pattern').on('click', function () {
+                    game.drawPaths(game.solutionList, game._gameSolutionLines());
+                });
+
+                this._gameFrame().find('.clear-pattern').on('click', function () {
+                    game._clearActiveList();
+                });
+
+                this._gameFrame().find('.restart-game').on('click', function () {
+                    game._startGameSequence();
+                });
+
+                this._startGameSequence();
+
+            }
+
+            p._clearNodeElementsState = function () {
+                $.each(this.nodeElementsList, this._clearNodeElementState);
+            }
+
+            p._clearActiveList = function () {
+                this.activeList = [];
+                this._gameUserLines().empty();
+                this._gameDebug().append('<br/>Pattern Cleared');
+            }
+
+            p._clearHistory = function () {
+
+            }
+
+            p._startGameSequence = function () {
+                this.solutionList = this.generatePath(); // generates a path, which is stored in the activeList
+                this.defaults.SolutionLength = this.solutionList.length;
+
+                this._gameDebug().empty();
+                this._gameDebug().append('New Game!');
+                this._gameDebug().append("<br/>Number of Nodes in Solution: " + this.defaults.SolutionLength);
+                this._clearNodeElementsState();
+                this._clearActiveList();
+                this._gameUserLines().empty();
+                this._gameSolutionLines().empty();
+                this._gameHistory().empty();
+                this.historyList = [];
+                this._updateScore();
+            }
+
+            p._clearNodeElementState = function (index, element) {
+                $(element).removeClass();
+                $(element).addClass('button');
+            };
+
+            p._updateScore = function () {
+                var d = this.defaults;
+                this._gameScore().text('Tries Remaining: ' + (d.maxTries - this.historyList.length));
+            }
+
+            p._gameBoard = function () { return $(this.context); }
+            p._gameHeader = function () { return this._gameBoard().find('.header-frame'); }
+            p._gameFrame = function () { return this._gameBoard().find('.game-frame'); }
+            p._gameHistory = function () { return this._gameBoard().find('.history-frame'); }
+            p._gameTitle = function () { return this._gameHeader().find('.title'); }
+            p._gameScore = function () { return this._gameHeader().find('.score'); }
+            p._gameSolutionLines = function () { return this._gameFrame().find('.solution-lines'); }
+            p._gameUserLines = function () { return this._gameFrame().find('.attempt-lines'); }
+            p._gameButtons = function () { return this._gameFrame().find('.button'); }
+
+            p._gameDebug = function () { return this._gameBoard().find('.debug-box'); }
+
+            p.gatherNodeList = function () {
+                this.nodeElementsList = this._gameButtons();
+
+                var index = 0;
+                while (index < this.nodeElementsList.length) {
+                    var item = this.nodeElementsList[index];
+                    var x = index % this.defaults.columns;
+                    var y = Math.floor(index / this.defaults.rows);
+                    var node = new GameNode(x, y);
+                    $(item).data('node', node);
+                    //$(item).html('<div style="margin: 15px 0px 0px 1px;">x:' + node.x + '||y:' + node.y +  '</div>');// Debug
+
+                    ++index;
+                }
+            }
+
+            p.generatePath = function () {
+                var d = this.defaults;
+                var max = d.cells > d.maximumSolution ? d.maximumSolution : d.cells;
+                var snodes = (Math.floor(Math.random() * (max - d.minimumSolution + 1)) + d.minimumSolution);
+                var startX = Math.floor(Math.random() * d.columns);
+                var startY = Math.floor(Math.random() * d.rows);
+                this.activeList = [];
+                this.activeList.push(new GameNode(startX, startY));
+
+                var i = 1;
+
+                var firstNode = this.activeList[0];
+                var lastNode = this._getRandomNextNode();
+
+                while (i < snodes && firstNode != lastNode) {
+                    if (!this._nodeIsInList(lastNode, this.activeList)) {
+                        this.activeList.push(lastNode);
+                        ++i;
+                    }
+
+                    lastNode = this._getRandomNextNode();
+                }
+
+                if (firstNode == lastNode && i != snodes) {
+                    //this._gameDebug().append("<div>node count: " + snodes + ". ended on last node: " + this._nodeText(lastNode) + "</div>") //debug
+                }
+
+                return this.activeList;
+            };
+
+            p._getRandomNextNode = function () {
+                var currentNode = this.activeList[this.activeList.length - 1];
+                var possibleNodes = this._possibleNodes(currentNode);
+                var nextNode = null;
+
+                while (nextNode == null) {
+                    var pnodeIndex = Math.floor(Math.random() * possibleNodes.length);
+                    var pnode = possibleNodes[pnodeIndex];
+
+                    if (this._nodeIsInList(pnode, this.activeList)) {
+                        if (possibleNodes.length == 1) {
+                            nextNode = this.activeList[0];
+                        }
+                        else {
+                            possibleNodes.splice(pnodeIndex, 1);
+                        }
+                    }
+                    else {
+                        nextNode = pnode;
+                    }
+                }
+
+                return nextNode;
+            }
+
+            p._sameNode = function (nodeA, nodeB) {
+                return nodeA.x == nodeB.x && nodeA.y == nodeB.y;
+            }
+
+            p._nodeIsInList = function (node, list) {
+                var i, test = false;
+
+                for (i = 0; i < list.length && !test; ++i) {
+                    if (this._sameNode(node, list[i])) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            p._nodeIsInBounds = function (node) {
+                return !(node.x >= this.defaults.columns || node.x < 0
+                    || node.y >= this.defaults.rows || node.y < 0);
+            }
+
+            p._addNodes = function (nodeA, nodeB) {
+                return new GameNode(nodeA.x + nodeB.x, nodeA.y + nodeB.y);
+            }
+
+            p._testNodePossibility = function (node) {
+                var al = this.activeList;
+                return this._nodeIsInBounds(node) && (al.length > 0 ? this._nodeIsInList(node, this._possibleNodes(al[al.length - 1])) : true);
+            }
+
+            p._possibleNodes = function (node) {
+                var possibleNodes = [];
+                //manually look in all directions.
+                var d = this.defaults.directions, c = this.defaults.compass;
+
+                var newNode = this._addNodes(node, d[c.north]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(node, d[c.south]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(node, d[c.east]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(node, d[c.west]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.north]), d[c.east]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.north]), d[c.west]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.south]), d[c.east]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                newNode = this._addNodes(this._addNodes(node, d[c.south]), d[c.west]);
+                if (this._nodeIsInBounds(newNode)) possibleNodes.push(newNode);
+
+                return possibleNodes;
+            }
+
+            p.drawPaths = function (list, container) {
+                var i = 0;
+                var item = null;
+
+                container.empty();
+                while (i < list.length - 1) {
+                    item = this._lineFromNodeToNode(list[i], list[i + 1]);
+                    container.append(item);
+                    ++i;
+                }
+            }
+
+            p._lineFromNodeToNode = function (nodeA, nodeB) {
+                var itemA = this._getNodeElement(nodeA);
+                var itemB = this._getNodeElement(nodeB);
+                var positionA = itemA.offset();
+                var positionB = itemB.offset();
+
+                var line = $('<div class="path-line"></div>');
+
+                var AxEqBx = nodeA.x == nodeB.x;
+                var AyEqBy = nodeA.y == nodeB.y;
+                var AxGtBx = nodeA.x > nodeB.x;
+                var AyGtBy = nodeA.y > nodeB.y;
+                var AxLtBx = nodeA.x < nodeB.x;
+                var AyLtBy = nodeA.y < nodeB.y;
+
+                var rotate = 0;
+                if (AxEqBx && AyGtBy) { rotate = -90; }
+                else if (AxEqBx && AyLtBy) { rotate = 90; }
+                else if (AxGtBx && AyEqBy) { rotate = 180; }
+                else if (AxLtBx && AyEqBy) { rotate = 0; }
+                else if (AxGtBx && AyGtBy) { rotate = -135; }
+                else if (AxGtBx && AyLtBy) { rotate = 135; }
+                else if (AxLtBx && AyGtBy) { rotate = -45; }
+                else if (AxLtBx && AyLtBy) { rotate = 45; }
+
+                var width = Math.sqrt(Math.pow(positionB.left - positionA.left, 2) + Math.pow(positionB.top - positionA.top, 2));
+
+                positionA.top;
+
+                var top = positionA.top - this._gameHeader().height() - 12; // 6 being the two borders width together
+                var left = positionA.left + Math.floor(itemA.width() / 2) - 12; // 6 being the two borders width together
+                line.css({
+                    top: top,
+                    left: left,
+                    width: width,
+                    transform: "rotate(" + rotate + "deg)"
+                });
+
+                return line;
+            }
+
+            p._getNodeElement = function (nodeA) {
+                var i = 0, element = null, item = null;
+                var list = this.nodeElementsList;
+                var item;
+                while (i < list.length && element == null) {
+                    item = list[i];
+
+                    if (this._sameNode(nodeA, $(item).data('node'))) {
+                        return $(item);
+                    }
+                    ++i;
+                }
+            }
+
+            p.simulateUserAttempt = function () {
+                this.userList = this.generatePath();
+                this.drawPaths(this.userList, this._gameUserLines());
+                this.checkForWin(this.userList, this.solutionList);
+                this.appendToHistory(this.userList);
+
+                this.activeList = [];
+                this._updateScore();
+            }
+
+            p.checkForWin = function (attemptList, solutionList) {
+                this._markNodes(attemptList, solutionList);
+                this._clearNodeElementsState();
+
+                var i = 0;
+                var allGreen = true; // optimism
+                while (i < attemptList.length) {
+                    var node = attemptList[i];
+                    var nodeElement = this._getNodeElement(node);
+
+                    if (node.state) {
+                        nodeElement.addClass(node.state);
+                        allGreen = allGreen && node.state == this.defaults.states.correct;
+                    }
+
+                    ++i;
+                }
+                
+                if(allGreen) {
+                    this._gameDebug().append("<br/> You have won the game! press new game to play again!");
+                }
+            }
+
+            p._markNodes = function (attemptList, solutionList) {
+                var i = 0;
+
+                while (i < attemptList.length) {
+                    this._markNode(attemptList[i], i, solutionList);
+                    ++i;
+                }
+            }
+
+            p._markNode = function (node, position, solutionList) {
+                node.state = this._relativeNodePositionState(node, position, solutionList);
+            }
+
+            p._relativeNodePositionState = function (attemptNode, position, solutionList) {
+                
+                var d = this.defaults;
+            
+                var previousList = solutionList.slice(0, position);
+                if (this._nodeIsInList(attemptNode, previousList)) {
+                    if (!d.showPatternRelativePosition) {
+                        return d.states.close;
+                    }
+                    return d.states.before;
+                }
+
+                var afterList = solutionList.slice(position + 1);
+                if (this._nodeIsInList(attemptNode, afterList)) {
+                    if (!d.showPatternRelativePosition) {
+                        return d.states.close;
+                    }
+                    return d.states.after;
+                }
+                
+                var solutionNode = solutionList[position];
+                if (position < this.solutionList.length && this._sameNode(attemptNode, solutionNode)) {
+                    return d.states.correct;
+                }
+
+                return d.states.wrong;
+            }
+
+            p.appendToHistory = function (list) {
+                var tryNumber = $('<div onclick="histroyReplay(this)" class="try-replay"></div>');
+                var attempts = this._gameHistory().find('.try-replay');
+
+                tryNumber.text('try #' + (attempts.length + 1));
+                tryNumber.data('historyIndex', attempts.length);
+                this.historyList.push(list);
+
+                this._gameHistory().append(tryNumber);
+            }
+
+            p.replayPath = function (historyIndex) {
+                if (historyIndex < this.historyList.length) {
+                    this.drawPaths(this.historyList[historyIndex], this._gameUserLines());
+                    this.checkForWin(this.historyList[historyIndex], this.solutionList);
+                }
+            }
+
+            var GameNode = function (x, y, state) {
+                this.x = x || 0;
+                this.y = y || 0;
+                this.state = state || defaults.states.wrong;
+
+                this.toString = function () { return '(' + this.x + ", " + '' + this.y + ')';  }
+            }
+
+            $.fn.PatternLockGame = function (options) {
+                $(this).each(function () { $(this).data('calendar', new PatternLockGame(options, this)); });
+            }
+        })(jQuery);
+
+    </script>
+
+    <script>
+        $('.game-board').PatternLockGame();
+
+        function simulatePath(e) {
+            $('.game-board').data('gameObject').simulateUserAttempt();
+        }
+
+        function histroyReplay(input) {
+            $('.game-board').data('gameObject').replayPath($(input).data('historyIndex'));
+        }
+
+        function switchDifficulty(input) {
+            //$('.game-board').data('gameObject').replayPath($(input).data('historyIndex'));
+        }
+    </script>
+</body>
+</html>
