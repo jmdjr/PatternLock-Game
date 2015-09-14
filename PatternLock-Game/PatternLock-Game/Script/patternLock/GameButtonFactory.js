@@ -29,25 +29,22 @@ define(['phaser'], function () {
             game.load.spritesheet(this.info.key, this.info.src, this.info.height, this.info.width, 7);
         },
         
-        _overlay: null,
-
         button: function (game, x, y, xpad, ypad) {
             Phaser.Sprite.call(this, game, x * (GameButtonFactory.info.width + xpad), y * (GameButtonFactory.info.height + ypad), GameButtonFactory.info.key, GameButtonFactory.buttonState.Idle);
             this._overlay = game.make.sprite(0, 0, GameButtonFactory.info.key, GameButtonFactory.overlayState.Correct);
-            this.setStatus(Math.round(Math.random() * 4 + 2));
             this._overlay.scale = new Phaser.Point();
-            this._status = GameButtonFactory.overlayState.Correct;
-            this.addChild(this._overlay);
-            this.anchor.set(0.5);
             this._overlay.anchor.set(0.5);
+
+            this.setStatus(Math.round(Math.random() * 4 + 2));
+
+            this._status = GameButtonFactory.overlayState.Correct;
+            //
+            this.anchor.set(0.5);
             this._active = false;
             this.inputEnabled = true;
-            this.interactive = true;
+            this._overlay.inputEnabled = true;
 
             this._pos = { x: x, y: y };
-            //this.events.onInputDown.add(this._buttonDown, this);
-            //this.body.setSize(GameButtonFactory.info.width, GameButtonFactory.info.height, 0, 0);
-            //debugger;
         }
     }
 
@@ -72,16 +69,27 @@ define(['phaser'], function () {
         }
     }
 
-    p.animatePingIn = function (game) {
-        game.add.tween(this._overlay.scale).to({ x: 1.0, y: 1.0 }, 500, Phaser.Easing.Bounce.Out, true);
+    p.animatePingIn = function () {
+        this.addChild(this._overlay);
+
+        this.game.add.tween(this._overlay.scale).to({ x: 1.0, y: 1.0 }, 500, Phaser.Easing.Bounce.Out, true);
     }
 
-    p.animatePingOut = function (game) {
-        game.add.tween(this._overlay.scale).to({ x: 0.0, y: 0.0 }, 500, Phaser.Easing.Bounce.In, true);
+    p.animatePingOut = function () {
+        var $this = this;
+        this.game.add.tween(this._overlay.scale).to({ x: 0.0, y: 0.0 }, 500, Phaser.Easing.Bounce.In, true)
+        .onComplete.add(function (target, tween) { $this.removeChild($this._overlay); });
     }
 
-    p._buttonDown = function (button, pointer) {
-        debugger;
+    p.Ping = function () {
+        var $this = this;
+
+        this.animatePingIn();
+        setTimeout(function () { $this.animatePingOut(); }, 1000);
+    }
+
+    p.onInputDown = function (delegate) {
+        this.events.onInputDown.add(delegate, this);
     }
 
     p.update = function () {

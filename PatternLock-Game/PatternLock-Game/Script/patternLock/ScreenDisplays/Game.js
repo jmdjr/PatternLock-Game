@@ -95,8 +95,12 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
             this._initGame();
 
-            this._lockButtons.setAll('inputEnabled', true);
+            var $this = this;
+            //this._lockButtons.setAll('inputEnabled', true);
 
+            this._lockButtons.children.forEach(function(child){ 
+                child.onInputDown(this._buttonDown, child);
+            }, this);
         },
 
         // returns the assets which belong in the foreground
@@ -112,7 +116,7 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         _buttonDown: function (lockButton) {
-            debugger;
+            lockButton.Ping();
         },
         
         _buttonOver: function (lockButton) {
@@ -141,9 +145,9 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         render: function (game) {
-            game.debug.spriteInputInfo(this._lockButtons.children[this._lockButtons.length - 1], 0, 50, 'rgba(0, 255, 0, .5)');
+            //game.debug.spriteInputInfo(this._lockButtons.children[this._lockButtons.length - 1], 0, 50, 'rgba(0, 255, 0, .5)');
             //game.debug.spriteInputInfo(this._lockButtons, 'rgba(145, 145, 0, .5)', true);
-            game.debug.spriteBounds(this._lockButtons.children[this._lockButtons.length - 1], 'rgba(0, 255, 0, .5)', true)
+            //game.debug.spriteBounds(this._lockButtons.children[this._lockButtons.length - 1], 'rgba(0, 255, 0, .5)', true)
         }
     };
 });
