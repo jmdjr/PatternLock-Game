@@ -39,7 +39,8 @@ define(['phaser'], function () {
 
             this._status = GameButtonFactory.overlayState.Correct;
             this.anchor.set(0.5);
-            this._active = false;
+            this._activePing = false;
+
             this.inputEnabled = true;
             this._overlay.inputEnabled = true;
 
@@ -52,12 +53,10 @@ define(['phaser'], function () {
 
     p.activate = function () {
         this.frame = GameButtonFactory.buttonState.Active;
-        this._active = true;
     }
 
     p.deactivate = function () {
         this.frame = GameButtonFactory.buttonState.Idle;
-        this._active = false;
     }
 
     p.setStatus = function (status) {
@@ -70,28 +69,38 @@ define(['phaser'], function () {
 
     p.animatePingIn = function () {
         this.addChild(this._overlay);
-
         this.game.add.tween(this._overlay.scale).to({ x: 1.0, y: 1.0 }, 500, Phaser.Easing.Bounce.Out, true);
     }
 
     p.animatePingOut = function () {
         var $this = this;
-        this.game.add.tween(this._overlay.scale).to({ x: 0.0, y: 0.0 }, 500, Phaser.Easing.Bounce.In, true)
-        .onComplete.add(function (target, tween) { $this.removeChild($this._overlay); });
+            this.game.add.tween(this._overlay.scale).to({ x: 0.0, y: 0.0 }, 500, Phaser.Easing.Bounce.In, true)
+            .onComplete.add(function (target, tween) { $this.removeChild($this._overlay); $this._activePing = false; });
     }
 
     p.Ping = function () {
         var $this = this;
-
-        this.animatePingIn();
-        setTimeout(function () { $this.animatePingOut(); }, 1000);
+        if (!this._activePing) {
+            this._activePing = true;
+            this.animatePingIn();
+            setTimeout(function () { $this.animatePingOut(); }, 1000);
+        }
     }
 
     p.onInputDown = function (delegate) {
         this.events.onInputDown.add(delegate, this);
     }
 
+    p.onInputOver = function (delegate) {
+        this.events.onInputOver.add(delegate, this);
+    }
+
+    p.onInputUp = function (delegate) {
+        this.events.onInputUp.add(delegate, this);
+    }
+
     p.update = function () {
+
     }
 
     return GameButtonFactory;

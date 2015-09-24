@@ -15,16 +15,6 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
                 hpad: 20,
                 top: 130,
                 left: 66,
-                //Nodes: [
-                //    { key: '00', links: ['01', '11', '10'] },
-                //    { key: '01', links: ['00', '02', '10', '11', '12'] },
-                //    { key: '02', links: ['01', '11', '12'] },
-                //    { key: '10', links: ['00', '01', '11', '20', '21'] },
-                //    { key: '11', links: ['00', '01', '02', '10', '12', '20', '21', '22'] },
-                //    { key: '12', links: ['01', '02', '11', '21', '22'] },
-                //    { key: '20', links: ['10', '11', '21'] },
-                //    { key: '21', links: ['10', '11', '12', '20', '22'] },
-                //    { key: '22', links: ['11', '12', '21'] }]
             },
             medium4x4: {
                 v: 4,
@@ -40,7 +30,7 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
                 vpad: 10,
                 hpad: 10,
                 top: 96,
-                left: 68,
+                left: 78,
             }
         },
 
@@ -75,7 +65,7 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         create: function (game) {
-            this._lockPattern = this.lockPatterns.small3x3;
+            this._lockPattern = this.lockPatterns.odd5x3;
             this._lockButtons = game.make.group();
 
             //this._controls.History = 
@@ -113,10 +103,6 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
         _buttonDown: function (lockButton) {
             lockButton.Ping();
-        },
-        
-        _buttonOver: function (lockButton) {
-            debugger;
         },
 
         _buttonUp: function (lockButton) {
