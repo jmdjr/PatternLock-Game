@@ -42,6 +42,9 @@
 
         initialize: function () {
             this._gatherNodeList();
+
+            var $this = this;
+
         },
 
         handleNodeClick: function () {

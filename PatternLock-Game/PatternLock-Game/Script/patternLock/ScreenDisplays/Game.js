@@ -96,10 +96,10 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
             this._initGame();
 
             var $this = this;
-            //this._lockButtons.setAll('inputEnabled', true);
 
             this._lockButtons.children.forEach(function(child){ 
                 child.onInputDown(this._buttonDown, child);
+
             }, this);
         },
 
@@ -109,10 +109,6 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         update: function (game) {
-            //debugger;
-            //this._lockButtons.forEach(function (button) {
-                
-            //}, this, false, {});
         },
 
         _buttonDown: function (lockButton) {
@@ -125,6 +121,10 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
         _buttonUp: function (lockButton) {
 
+        },
+
+        _establishDisplay: function(){
+        
         },
 
         _createLockButtons: function (game) {

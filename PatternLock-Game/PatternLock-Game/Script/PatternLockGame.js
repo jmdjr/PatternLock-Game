@@ -9,16 +9,7 @@
 
     function create() {
         device.create(game);
-
-        //var test1 = new buttonFactory.button(game, 1, 1, 0, 0);
-        //var test2 = new buttonFactory.button(game, 2, 1, 0, 0);
-
-        //test1.onInputDown(function () {
-        //    this.Ping();
-        //});
-
-        //game.add.existing(test1);
-        //game.add.existing(test2);
+        touchScreen.create(game);
     }
 
     function update() {
@@ -26,7 +17,7 @@
     }
 
     function render() {
-        //touchscreen.render(game);
+        touchScreen.render(game);
     }
 });
 

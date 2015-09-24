@@ -35,10 +35,9 @@ define(['phaser'], function () {
             this._overlay.scale = new Phaser.Point();
             this._overlay.anchor.set(0.5);
 
-            this.setStatus(Math.round(Math.random() * 4 + 2));
+            //this.setStatus(Math.round(Math.random() * 4 + 2)); // randomize state for testing
 
             this._status = GameButtonFactory.overlayState.Correct;
-            //
             this.anchor.set(0.5);
             this._active = false;
             this.inputEnabled = true;
@@ -93,18 +92,6 @@ define(['phaser'], function () {
     }
 
     p.update = function () {
-        //if (this.input.justPressed()) {
-        //    //this._buttonDown(button);
-        //    debugger;
-        //}
-        //if (this.input.justOver()) {
-        //    //this._buttonOver(button);
-        //    debugger;
-        //}
-        //if (this.input.justReleased()) {
-        //    //this._buttonUp(button);
-        //    debugger;
-        //}
     }
 
     return GameButtonFactory;
