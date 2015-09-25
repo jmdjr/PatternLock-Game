@@ -59,6 +59,22 @@ define(['phaser'], function () {
         this.frame = GameButtonFactory.buttonState.Idle;
     }
 
+    p.onInputDown = function (delegate) {
+        this.events.onInputDown.add(delegate, this);
+    }
+
+    p.onInputOver = function (delegate) {
+        this.events.onInputOver.add(delegate, this);
+    }
+
+    p.onInputUp = function (delegate) {
+        this.events.onInputUp.add(delegate, this);
+    }
+
+    p.update = function () {
+
+    }
+
     p.setStatus = function (status) {
         overlayState = GameButtonFactory.overlayState;
         if (overlayState.Correct <= status && status < overlayState.Under) {
@@ -87,21 +103,6 @@ define(['phaser'], function () {
         }
     }
 
-    p.onInputDown = function (delegate) {
-        this.events.onInputDown.add(delegate, this);
-    }
-
-    p.onInputOver = function (delegate) {
-        this.events.onInputOver.add(delegate, this);
-    }
-
-    p.onInputUp = function (delegate) {
-        this.events.onInputUp.add(delegate, this);
-    }
-
-    p.update = function () {
-
-    }
 
     return GameButtonFactory;
 });

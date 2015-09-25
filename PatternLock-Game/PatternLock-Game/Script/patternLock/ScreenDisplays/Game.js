@@ -89,8 +89,10 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
             this._lockButtons.children.forEach(function(child){ 
                 child.onInputDown(this._buttonDown, child);
-
+                child.onInputOver(this._buttonOver, child);
             }, this);
+
+            game.input.onUp.add(this._buttonUp);
         },
 
         // returns the assets which belong in the foreground
@@ -101,12 +103,20 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         update: function (game) {
         },
 
-        _buttonDown: function (lockButton) {
-            lockButton.Ping();
+        _buttonDown: function (button) {
+            button.setStatus(buttonFactory.overlayState.Correct);
+            button.Ping();
         },
 
-        _buttonUp: function (lockButton) {
+        _buttonOver: function (button) {
+            button.Ping();
+        },
 
+        _buttonUp: function (pointer) {
+            var button = pointer.targetObject.sprite;
+            if (button instanceof buttonFactory.button) {
+                //might not be necessary to denote which one is the last one.
+            }
         },
 
         _establishDisplay: function(){
