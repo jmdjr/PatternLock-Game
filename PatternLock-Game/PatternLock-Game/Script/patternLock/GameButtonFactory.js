@@ -59,16 +59,16 @@ define(['phaser'], function () {
         this.frame = GameButtonFactory.buttonState.Idle;
     }
 
-    p.onInputDown = function (delegate) {
-        this.events.onInputDown.add(delegate, this);
+    p.onInputDown = function (delegate, context) {
+        this.events.onInputDown.add(delegate, context);
     }
 
-    p.onInputOver = function (delegate) {
-        this.events.onInputOver.add(delegate, this);
+    p.onInputOver = function (delegate, context) {
+        this.events.onInputOver.add(delegate, context);
     }
 
-    p.onInputUp = function (delegate) {
-        this.events.onInputUp.add(delegate, this);
+    p.onInputUp = function (delegate, context) {
+        this.events.onInputUp.add(delegate, context);
     }
 
     p.update = function () {

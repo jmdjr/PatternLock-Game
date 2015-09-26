@@ -7,7 +7,7 @@ define(['screen/Game', 'screen/Logo'], function (Game, Logo) {
         },
 
         // more scenes here for title screen, pause etc...
-        screenDisplays: [Logo, Game],
+        screenDisplays: [/*Logo, */Game],
 
         _displayIndex: 0,
 

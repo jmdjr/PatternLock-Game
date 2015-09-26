@@ -66,33 +66,30 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
         create: function (game) {
             this._lockPattern = this.lockPatterns.odd5x3;
-            this._lockButtons = game.make.group();
 
-            //this._controls.History = 
+            this._createDisplay(game);
+
+            this._createLockButtons(game);
+
+            this._initGame();
+
+            this._UserLineCreation = false;
+            var $this = this;
+
+        },
+
+        _createDisplay: function (game) {
+            this._lockButtons = game.make.group();
+            this._display = game.make.group();
+
             this._baseGraphics.screenBackground = game.make.sprite(0, 0, this.screenBackground.key);
             this._baseGraphics.screenBackground.inputEnabled = false;
 
             this._lockButtons.x = this._lockPattern.left;
             this._lockButtons.y = this._lockPattern.top;
 
-            this._display = game.make.group();
-
             this._display.add(this._baseGraphics.screenBackground);
             this._display.add(this._lockButtons);
-
-            this._createLockButtons(game);
-            this._created = true;
-
-            this._initGame();
-
-            var $this = this;
-
-            this._lockButtons.children.forEach(function(child){ 
-                child.onInputDown(this._buttonDown, child);
-                child.onInputOver(this._buttonOver, child);
-            }, this);
-
-            game.input.onUp.add(this._buttonUp);
         },
 
         // returns the assets which belong in the foreground
@@ -104,19 +101,32 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         _buttonDown: function (button) {
-            button.setStatus(buttonFactory.overlayState.Correct);
+            this._UserLineCreation = true;
+
+            this._lockButtons.children.forEach(function (child) {
+                child.setStatus(buttonFactory.overlayState.Correct);
+            });
+
             button.Ping();
         },
 
         _buttonOver: function (button) {
+            if (this._UserLineCreation) {
+            }
             button.Ping();
         },
 
         _buttonUp: function (pointer) {
-            var button = pointer.targetObject.sprite;
-            if (button instanceof buttonFactory.button) {
-                //might not be necessary to denote which one is the last one.
+            if (pointer.targetObject) {
+                var button = pointer.targetObject.sprite;
+                if (button instanceof buttonFactory.button) {
+                    //might not be necessary to denote which one is the last one.
+                    button.setStatus(buttonFactory.overlayState.Wrong);
+                    button.Ping();
+                }
             }
+
+            this._UserLineCreation = false;
         },
 
         _establishDisplay: function(){
@@ -135,9 +145,13 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
                 for (var j = 0; j < this._lockPattern.h; ++j) {
                     var button = new buttonFactory.button(game, j, i, vp, hp);
                     this._lockButtons.add(button);
+
+                    button.onInputDown(this._buttonDown, this);
+                    button.onInputOver(this._buttonOver, this);
                 }
             }
 
+            game.input.onUp.add(this._buttonUp, this);
         },
 
         render: function (game) {
