@@ -44,7 +44,7 @@ define(['phaser'], function () {
             this.inputEnabled = true;
             this._overlay.inputEnabled = true;
 
-            this._pos = { x: x, y: y };
+            this._node = { x: x, y: y };
         }
     }
 

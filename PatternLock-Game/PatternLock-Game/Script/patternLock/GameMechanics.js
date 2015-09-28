@@ -32,7 +32,6 @@
             }
         },
 
-        tempList: [],           // The active list of nodes. these nodes are currently being proccessed...
         solutionList: [],       // The generated list of nodes which denotes the solution.
         userList: [],           // The list of nodes being chosen by the user.
         nodeElementsList: [],   // The list of all buttons. they have nodes.
@@ -166,7 +165,11 @@
         },
 
         addToList: function (node) {
-
+            if (this.userList.length == 0) {
+                this.userList.push(node);
+            } else if (this._testNodePossibility(node, this.userList)) {
+                //
+            }
         },
 
         update: function () {
@@ -182,7 +185,7 @@
             while (i < buttons.length) {
                 item = buttons[i];
 
-                if (this._sameNode(node, item._pos)) {
+                if (this._sameNode(node, item._node)) {
                     return item;
                 }
                 ++i;

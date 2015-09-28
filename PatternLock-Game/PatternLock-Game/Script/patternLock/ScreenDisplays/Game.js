@@ -1,5 +1,5 @@
 ﻿
-define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory, gameLogic) {
+define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory, mechanics) {
     return {
         _created: false,
         screenBackground: {
@@ -51,13 +51,13 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
             game.load.image(this.screenBackground.key, this.screenBackground.src);
         },
 
-        _initGame: function () {
-            gameLogic.defaults.cells = this._lockPattern.v * this._lockPattern.h;
-            gameLogic.defaults.rows = this._lockPattern.v;
-            gameLogic.defaults.columns = this._lockPattern.h;
-            gameLogic.nodeElementsList = this._lockButtons;
+        _initGameMechanics: function () {
+            mechanics.defaults.cells = this._lockPattern.v * this._lockPattern.h;
+            mechanics.defaults.rows = this._lockPattern.v;
+            mechanics.defaults.columns = this._lockPattern.h;
+            mechanics.nodeElementsList = this._lockButtons;
 
-            gameLogic.initialize();
+            mechanics.initialize();
         },
 
         _nodeElements: function () {
@@ -65,16 +65,15 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         create: function (game) {
-            this._lockPattern = this.lockPatterns.odd5x3;
+            this._lockPattern = this.lockPatterns.small3x3;
 
             this._createDisplay(game);
 
             this._createLockButtons(game);
 
-            this._initGame();
+            this._initGameMechanics();
 
             this._UserLineCreation = false;
-            var $this = this;
 
         },
 
@@ -107,13 +106,11 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
                 child.setStatus(buttonFactory.overlayState.Correct);
             });
 
-            button.Ping();
         },
 
         _buttonOver: function (button) {
             if (this._UserLineCreation) {
             }
-            button.Ping();
         },
 
         _buttonUp: function (pointer) {
