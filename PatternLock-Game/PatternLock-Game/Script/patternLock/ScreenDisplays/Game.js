@@ -74,7 +74,6 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
             this._initGameMechanics();
 
             this._UserLineCreation = false;
-
         },
 
         _createDisplay: function (game) {

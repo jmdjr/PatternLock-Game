@@ -99,6 +99,7 @@
     <Content Include="Script\jquerymy-1.1.4.js" />
     <Content Include="Script\jquerymy-1.1.4.min.js" />
     <Content Include="Script\PatternLockGame.js" />
+    <Content Include="Script\patternLock\Controls\DrawingControl.js" />
     <Content Include="Script\patternLock\Controls\HistoryPanel.js" />
     <Content Include="Script\patternLock\DeviceScreen.js" />
     <Content Include="Script\patternLock\GameButtonFactory.js" />
