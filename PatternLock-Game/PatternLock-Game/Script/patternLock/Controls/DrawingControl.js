@@ -213,11 +213,23 @@ define(function () {
 
             return {
                 start: pointA,
-                line: line,
+                _line: line,
                 _bmd: bmd,
                 _sprite: sprite,
                 addPoint: function (pointB) {
-
+                    //bmd.clear();
+                    //bmd.ctx.beginPath();
+                    //bmd.ctx.beginPath();
+                    //bmd.ctx.moveTo(pointB.x, pointB.y);
+                    this._bmd.ctx.lineTo(pointB.x, pointB.y);
+                    this._bmd.ctx.lineWidth = Number(this._line);
+                    this._bmd.ctx.stroke();
+                    //bmd.ctx.closePath();
+                    this._bmd.render();
+                    this._bmd.refreshBuffer();
+                },
+                : function () {
+                    return this._sprite;
                 }
             };
         }
