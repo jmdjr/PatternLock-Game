@@ -42,7 +42,6 @@
             this.solutionList = this.generateSolutionList();
 
             var i = 0;
-            debugger;
             while (i < this.solutionList.length) {
                 var button = this._getNodeElement(this.solutionList[i]);
                 button.setStatus(buttonClass.overlayState.Wrong);

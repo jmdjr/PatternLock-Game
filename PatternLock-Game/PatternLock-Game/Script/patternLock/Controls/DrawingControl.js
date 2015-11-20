@@ -201,10 +201,10 @@ define(function () {
         GeneratePathController: function (game, pointA, line) {
 
             var bmd = game.make.bitmapData(game.width, game.width);
-
+            var _line = $.extend({}, this.DefaultLine, line);
             bmd.ctx.beginPath();
-            bmd.ctx.lineWidth = line.width;
-            bmd.ctx.strokeStyle = this.ColorArray[line.Color];
+            bmd.ctx.lineWidth = _line.width;
+            bmd.ctx.strokeStyle = this.ColorArray[_line.Color];
             bmd.ctx.stroke();
 
             bmd.ctx.moveTo(pointA.x, pointA.y);
@@ -213,7 +213,8 @@ define(function () {
 
             return {
                 start: pointA,
-                _line: line,
+                points: [pointA],
+                _line: _line,
                 _bmd: bmd,
                 _sprite: sprite,
                 addPoint: function (pointB) {
@@ -221,16 +222,24 @@ define(function () {
                     //bmd.ctx.beginPath();
                     //bmd.ctx.beginPath();
                     //bmd.ctx.moveTo(pointB.x, pointB.y);
-                    this._bmd.ctx.lineTo(pointB.x, pointB.y);
-                    this._bmd.ctx.lineWidth = Number(this._line);
-                    this._bmd.ctx.stroke();
+                    var ctx = this._bmd.ctx;
+
+                    var last = this.points[this.points.length - 1];
+                    ctx.moveTo(last.x, last.y);
+                    ctx.lineTo(pointB.x, pointB.y);
+                    ctx.lineWidth = Number(this._line.width);
+                    ctx.stroke();
+                    //ctx.update();
                     //bmd.ctx.closePath();
-                    this._bmd.render();
-                    this._bmd.refreshBuffer();
+                    //this._bmd.render();
+                    this.points.push(pointB);
+                    ctx.dirty = true;
+                    //this._bmd.refreshBuffer();
                 },
-                : function () {
+                getSprite: function () {
                     return this._sprite;
-                }
+                },
+
             };
         }
     }
