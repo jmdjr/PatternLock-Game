@@ -1,7 +1,8 @@
 ﻿
-define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory, mechanics) {
+define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'], function (buttonFactory, mechanics, draw) {
     return {
         _created: false,
+        _game: null,
         screenBackground: {
             key: 'screenBackground',
             src: 'Resources/background_1.png'
@@ -74,6 +75,7 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
             this._initGameMechanics();
 
             this._UserLineCreation = false;
+            this._game = game;
         },
 
         _createDisplay: function (game) {
@@ -88,6 +90,9 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
 
             this._display.add(this._baseGraphics.screenBackground);
             this._display.add(this._lockButtons);
+
+            this._activeLine = draw.LineGroupControl(game);
+            this._display.add(this._activeLine.getGroup());
         },
 
         // returns the assets which belong in the foreground
@@ -96,10 +101,18 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         update: function (game) {
+            if (this._UserLineCreation) {
+                this._activeLine.update(game.input.activePointer.position);
+            }
         },
+
+        _activeLine: null,
 
         _buttonDown: function (button) {
             this._UserLineCreation = true;
+
+            this._activeLine.lastPoint = { x: button.world.x, y: button.world.y };
+            this._activeLine.createLine();
 
             this._lockButtons.children.forEach(function (child) {
                 child.setStatus(buttonFactory.overlayState.Correct);
@@ -108,8 +121,6 @@ define(['game/GameButtonFactory', 'game/GameMechanics'], function (buttonFactory
         },
 
         _buttonOver: function (button) {
-            if (this._UserLineCreation) {
-            }
         },
 
         _buttonUp: function (pointer) {

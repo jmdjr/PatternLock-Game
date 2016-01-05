@@ -3,6 +3,105 @@
 
 define(function () {
     return {
+        DefaultLine: {
+            color: "blue",
+            width: "5"
+        },
+
+        DrawStaticLine: function (game, pointA, pointB, line) {
+            //if (!(pointA && pointA.x && pointA.y)) {
+            //    throw Error("DrawLine: Point A not defined.");
+            //}
+
+            //if (!(pointB && pointB.x && pointB.y)) {
+            //    throw Error("DrawLine: Point B not defined.");
+            //}
+
+            if (!line) {
+                line = this.DefaultLine;
+            }
+
+            //var height = Math.abs(pointB.y - pointA.y) + Number(line.width), width = Math.abs(pointB.x - pointA.x) + Number(line.width);
+
+            debugger;
+            var bmd = game.make.bitmapData(game.width, game.width);
+
+            bmd.ctx.beginPath();
+            bmd.ctx.lineWidth = line.width;
+            bmd.ctx.strokeStyle = this.ColorArray[line.Color];
+            bmd.ctx.stroke();
+
+            var sprite = game.make.sprite(0, 0, bmd);
+            
+            bmd.ctx.beginPath();
+            bmd.ctx.beginPath();
+            bmd.ctx.moveTo(pointA.x, pointA.y);
+            bmd.ctx.lineTo(pointB.x, pointB.y);
+            bmd.ctx.lineWidth = Number(line.width);
+            bmd.ctx.stroke();
+            bmd.ctx.closePath();
+            bmd.render();
+            bmd.refreshBuffer();
+
+            return sprite;
+        },
+
+        LineGroupControl: function (game, start, line) {
+            // second attempt at drawing line controller.
+            // returns an object with referencable sprite group of lines.
+            // lines will be indexed, and kept in seperate sprites for speed purposes (no redrawing a line unless needed)
+            
+            var _line = $.extend({}, this.DefaultLine, line);
+            var spriteGroup = game.make.group();
+            return {
+                lines: [],
+                _group: spriteGroup,
+                activeLine: null,
+                activeBmd: null,
+                lastPoint: start,
+                drawLine: _line,
+                game: game,
+                //update will display the line from the last point to the updated point.
+                update: function (point) {
+                    if (this.activeBmd) {
+                        this.activeBmd.clear();
+                        this.activeBmd.ctx.beginPath();
+                        this.activeBmd.ctx.beginPath();
+                        this.activeBmd.ctx.moveTo(this.lastPoint.x, this.lastPoint.y);
+                        this.activeBmd.ctx.lineTo(point.x, point.y);
+                        this.activeBmd.ctx.lineWidth = this.drawLine.width;
+                        this.activeBmd.ctx.strokeStyle = this.drawLine.color;
+                        this.activeBmd.ctx.stroke();
+                        this.activeBmd.ctx.closePath();
+                        this.activeBmd.render();
+                    }
+                },
+
+                // creates a new line, starting from the last point used.
+                createLine: function () {
+                    this.activeBmd = this.game.add.bitmapData(this.game.width, this.game.height);
+                    this.activeBmd.ctx.beginPath();
+                    this.activeBmd.ctx.lineWidth = this.drawLine.width;
+                    this.activeBmd.ctx.strokeStyle = this.drawLine.color;
+                    this.activeBmd.ctx.stroke();
+                    this.activeLine = this.game.make.sprite(0, 0, this.activeBmd);
+                    this._group.add(this.activeLine);
+                },
+
+                // saves the line as a sprite, saving it and updating the last point to the one provided.
+                saveLine: function (point) {
+                    this.lastPoint = point;
+                    this.lines.push(this.activeLine);
+                    this.createLine();
+                },
+
+                getGroup: function () {
+                    return this._group;
+                }
+
+            }
+        },
+
         
         //Color codes
         ColorArray: {
@@ -153,95 +252,7 @@ define(function () {
             "tomato": "#ff6347",
             "white": "#ffffff",
             "yellow": "#ffff00"
-        },
-
-        DefaultLine: {
-            Color: "red",
-            width: "5"
-        },
-
-        DrawStaticLine: function (game, pointA, pointB, line) {
-            //if (!(pointA && pointA.x && pointA.y)) {
-            //    throw Error("DrawLine: Point A not defined.");
-            //}
-
-            //if (!(pointB && pointB.x && pointB.y)) {
-            //    throw Error("DrawLine: Point B not defined.");
-            //}
-
-            if (!line) {
-                line = this.DefaultLine;
-            }
-
-            //var height = Math.abs(pointB.y - pointA.y) + Number(line.width), width = Math.abs(pointB.x - pointA.x) + Number(line.width);
-
-            debugger;
-            var bmd = game.make.bitmapData(game.width, game.width);
-
-            bmd.ctx.beginPath();
-            bmd.ctx.lineWidth = line.width;
-            bmd.ctx.strokeStyle = this.ColorArray[line.Color];
-            bmd.ctx.stroke();
-
-            var sprite = game.make.sprite(0, 0, bmd);
-            
-            bmd.ctx.beginPath();
-            bmd.ctx.beginPath();
-            bmd.ctx.moveTo(pointA.x, pointA.y);
-            bmd.ctx.lineTo(pointB.x, pointB.y);
-            bmd.ctx.lineWidth = Number(line.width);
-            bmd.ctx.stroke();
-            bmd.ctx.closePath();
-            bmd.render();
-            bmd.refreshBuffer();
-
-            return sprite;
-        },
-
-        GeneratePathController: function (game, pointA, line) {
-
-            var bmd = game.make.bitmapData(game.width, game.width);
-            var _line = $.extend({}, this.DefaultLine, line);
-            bmd.ctx.beginPath();
-            bmd.ctx.lineWidth = _line.width;
-            bmd.ctx.strokeStyle = this.ColorArray[_line.Color];
-            bmd.ctx.stroke();
-
-            bmd.ctx.moveTo(pointA.x, pointA.y);
-
-            var sprite = game.make.sprite(0, 0, bmd);
-
-            return {
-                start: pointA,
-                points: [pointA],
-                _line: _line,
-                _bmd: bmd,
-                _sprite: sprite,
-                addPoint: function (pointB) {
-                    //bmd.clear();
-                    //bmd.ctx.beginPath();
-                    //bmd.ctx.beginPath();
-                    //bmd.ctx.moveTo(pointB.x, pointB.y);
-                    var ctx = this._bmd.ctx;
-
-                    var last = this.points[this.points.length - 1];
-                    ctx.moveTo(last.x, last.y);
-                    ctx.lineTo(pointB.x, pointB.y);
-                    ctx.lineWidth = Number(this._line.width);
-                    ctx.stroke();
-                    //ctx.update();
-                    //bmd.ctx.closePath();
-                    //this._bmd.render();
-                    this.points.push(pointB);
-                    ctx.dirty = true;
-                    //this._bmd.refreshBuffer();
-                },
-                getSprite: function () {
-                    return this._sprite;
-                },
-
-            };
-        }
+},
     }
 });
 
