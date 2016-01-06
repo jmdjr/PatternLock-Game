@@ -4,46 +4,21 @@
 define(function () {
     return {
         DefaultLine: {
-            color: "blue",
+            color: "rgba(100, 100, 100, 0.75)",
             width: "5"
         },
 
-        DrawStaticLine: function (game, pointA, pointB, line) {
-            //if (!(pointA && pointA.x && pointA.y)) {
-            //    throw Error("DrawLine: Point A not defined.");
-            //}
-
-            //if (!(pointB && pointB.x && pointB.y)) {
-            //    throw Error("DrawLine: Point B not defined.");
-            //}
-
-            if (!line) {
-                line = this.DefaultLine;
-            }
-
-            //var height = Math.abs(pointB.y - pointA.y) + Number(line.width), width = Math.abs(pointB.x - pointA.x) + Number(line.width);
-
-            debugger;
-            var bmd = game.make.bitmapData(game.width, game.width);
-
-            bmd.ctx.beginPath();
-            bmd.ctx.lineWidth = line.width;
-            bmd.ctx.strokeStyle = this.ColorArray[line.Color];
-            bmd.ctx.stroke();
-
-            var sprite = game.make.sprite(0, 0, bmd);
-            
-            bmd.ctx.beginPath();
-            bmd.ctx.beginPath();
-            bmd.ctx.moveTo(pointA.x, pointA.y);
-            bmd.ctx.lineTo(pointB.x, pointB.y);
-            bmd.ctx.lineWidth = Number(line.width);
-            bmd.ctx.stroke();
-            bmd.ctx.closePath();
-            bmd.render();
-            bmd.refreshBuffer();
-
-            return sprite;
+        DrawLine: function (bitmapData, pointA, pointB, lineDetails) {
+            bitmapData.clear();
+            bitmapData.ctx.beginPath();
+            bitmapData.ctx.beginPath();
+            bitmapData.ctx.moveTo(pointA.x, pointA.y);
+            bitmapData.ctx.lineTo(pointB.x, pointB.y);
+            bitmapData.ctx.lineWidth = lineDetails.width;
+            bitmapData.ctx.strokeStyle = lineDetails.color;
+            bitmapData.ctx.stroke();
+            bitmapData.ctx.closePath();
+            bitmapData.render();
         },
 
         LineGroupControl: function (game, start, line) {
@@ -93,6 +68,9 @@ define(function () {
                     this.lastPoint = point;
                     this.lines.push(this.activeLine);
                     this.createLine();
+                },
+                removeLine: function() {
+                    this._group.remove(this.activeLine, true);
                 },
 
                 getGroup: function () {

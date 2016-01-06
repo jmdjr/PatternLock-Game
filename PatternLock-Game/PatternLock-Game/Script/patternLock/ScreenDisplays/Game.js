@@ -66,7 +66,7 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
         },
 
         create: function (game) {
-            this._lockPattern = this.lockPatterns.small3x3;
+            this._lockPattern = this.lockPatterns.odd5x3;
 
             this._createDisplay(game);
 
@@ -90,37 +90,79 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
 
             this._display.add(this._baseGraphics.screenBackground);
             this._display.add(this._lockButtons);
-
-            this._activeLine = draw.LineGroupControl(game);
-            this._display.add(this._activeLine.getGroup());
         },
 
         // returns the assets which belong in the foreground
         getDisplay: function (game) {
             return this._display;
         },
+        _historyOfLines: [],
 
-        update: function (game) {
-            if (this._UserLineCreation) {
-                this._activeLine.update(game.input.activePointer.position);
+        _lineDisplay: {
+            _activeLine: null,
+            _selectedButtons: [],
+            _isActive: false,
+            _game: null,
+            _lockPattern: null,
+
+            New: function (game, lockPattern, startButton, display) {
+                this._game = game;
+                this._lockPattern = lockPattern;
+                this._activeLine = draw.LineGroupControl(this._game);
+                display.add(this._activeLine.getGroup());
+
+                this._selectedButtons.push(startButton);
+                this._activeLine.lastPoint = { x: startButton.x + lockPattern.left, y: startButton.y + lockPattern.top };
+                this._activeLine.createLine();
+
+                this._isActive = true;
+            },
+            Update: function (game) {
+                if (this._isActive) {
+                    var position = { x: game.input.activePointer.x, y: game.input.activePointer.position.y };
+                    position.x -= 26;
+                    position.y -= 70;
+                    this._activeLine.update(position);
+                }
+            },
+            Snap: function (button) {
+                var inCollection = this._selectedButtons.indexOf(button) != -1;
+
+                if (this._isActive && !inCollection) {
+                    this._selectedButtons.push(button);
+
+                    lastPosition = { x: button.x + this._lockPattern.left, y: button.y + this._lockPattern.top };
+                    this._activeLine.update(lastPosition);
+                    this._activeLine.saveLine(lastPosition);
+                    this._activeLine.createLine();
+                }
+            },
+            Finalize: function () {
+                if (this._isActive) {
+                    this._activeLine.removeLine();
+                    //var 
+                    this._historyOfLines.push(this._activeLine);
+
+                    this._display.remove(this._activeLine.getGroup());
+                    
+                    this._activeLine = null;
+                    this._selectedButtons = [];
+
+                    this._isActive = false;
+                }
             }
         },
 
-        _activeLine: null,
+        update: function (game) {
+            this._lineDisplay.Update(game);
+        },
 
         _buttonDown: function (button) {
-            this._UserLineCreation = true;
-
-            this._activeLine.lastPoint = { x: button.world.x, y: button.world.y };
-            this._activeLine.createLine();
-
-            this._lockButtons.children.forEach(function (child) {
-                child.setStatus(buttonFactory.overlayState.Correct);
-            });
-
+            this._lineDisplay.New(this._game, this._lockPattern, button, this._display);
         },
 
         _buttonOver: function (button) {
+            this._lineDisplay.Snap(button);
         },
 
         _buttonUp: function (pointer) {
@@ -128,15 +170,25 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
                 var button = pointer.targetObject.sprite;
                 if (button instanceof buttonFactory.button) {
                     //might not be necessary to denote which one is the last one.
-                    button.setStatus(buttonFactory.overlayState.Wrong);
-                    button.Ping();
+                    //button.setStatus(buttonFactory.overlayState.Wrong);
+                    //button.Ping();
                 }
             }
 
-            this._UserLineCreation = false;
+            if (this._activeLine) {
+                this._activeLine.removeLine();
+                this._UserLineCreation = false;
+                this._historyOfLines.push(this._activeLine);
+
+                this._display.remove(this._activeLine.getGroup());
+
+                this._activeLine = null;
+                this._selectedButtons = [];
+            }
+            // this means the 
         },
 
-        _establishDisplay: function(){
+        _establishDisplay: function() {
         
         },
 
