@@ -7,7 +7,7 @@ define(['screen/Game', 'screen/Logo'], function (Game, Logo) {
         },
 
         // more scenes here for title screen, pause etc...
-        screenDisplays: [/*Logo,*/ Game],
+        screenDisplays: [Logo, Game],
 
         _displayIndex: 0,
 
@@ -43,8 +43,12 @@ define(['screen/Game', 'screen/Logo'], function (Game, Logo) {
 
         setupGraphics: function (game) {
             this._display.removeAll();
-            this._CurrentDisplay.create(game, this);
-            this._display.add(this._CurrentDisplay.getDisplay(game));
+
+            if (this._CurrentDisplay) {
+                this._CurrentDisplay.create(game, this);
+                this._display.add(this._CurrentDisplay.getDisplay(game));
+            }
+
             this._dirtyDisplay = false;
         },
 
@@ -72,7 +76,7 @@ define(['screen/Game', 'screen/Logo'], function (Game, Logo) {
             if (this.shouldRefresh()) {
                 this.setupGraphics(game);
             }
-            if (this._CurrentDisplay.update) {
+            if (this._CurrentDisplay && this._CurrentDisplay.update) {
                 this._CurrentDisplay.update(game);
             }
         }

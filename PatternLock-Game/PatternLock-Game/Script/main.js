@@ -2,7 +2,8 @@
     baseUrl: 'Script/',
     paths: {
         game: 'patternLock',
-        screen: 'patternLock/ScreenDisplays'
+        screen: 'patternLock/ScreenDisplays',
+        control: 'patternLock/Controls'
     }
 });
 

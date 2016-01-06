@@ -59,13 +59,47 @@
   <ItemGroup>
     <Content Include="CanvasPage.html" />
     <Content Include="default.html" />
+    <Content Include="Resources\animatedLogo.gif" />
+    <Content Include="Resources\background.png" />
+    <Content Include="Resources\background_1.png" />
     <Content Include="Resources\ButtonsSpriteSheet.png" />
     <Content Include="Resources\cellphone.png" />
+    <Content Include="Resources\FlipStickLogo.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_1.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_10.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_11.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_12.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_13.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_14.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_15.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_16.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_17.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_18.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_19.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_2.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_20.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_21.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_22.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_23.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_24.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_25.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_26.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_27.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_28.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_29.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_3.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_4.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_5.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_6.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_7.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_8.png" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogo_9.png" />
     <Content Include="Resources\phoneText.png" />
     <Content Include="Script\main.js" />
     <Content Include="Script\jquerymy-1.1.4.js" />
     <Content Include="Script\jquerymy-1.1.4.min.js" />
     <Content Include="Script\PatternLockGame.js" />
+    <Content Include="Script\patternLock\Controls\DrawingControl.js" />
     <Content Include="Script\patternLock\Controls\HistoryPanel.js" />
     <Content Include="Script\patternLock\DeviceScreen.js" />
     <Content Include="Script\patternLock\GameButtonFactory.js" />
@@ -85,6 +119,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Script\phaser.map" />
+    <Content Include="Resources\FlipStickLogo\FlipStickLogoAnimation.pdn" />
+    <Content Include="Resources\gameIntroScreen.pdn" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
