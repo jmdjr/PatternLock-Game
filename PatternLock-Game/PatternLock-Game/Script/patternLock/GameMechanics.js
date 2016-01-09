@@ -44,9 +44,13 @@
             var i = 0;
             while (i < this.solutionList.length) {
                 var button = this._getNodeElement(this.solutionList[i]);
-                button.setStatus(buttonClass.overlayState.Wrong);
+                button.setStatus(buttonClass.overlayState.Correct);
                 ++i;
             }
+        },
+
+        checkPossible: function (button) {
+
         },
 
         generateSolutionList: function () {
@@ -74,7 +78,6 @@
             }
 
             return theList;
-
         },
 
         _getRandomNextNode: function (list) {

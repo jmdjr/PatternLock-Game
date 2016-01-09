@@ -1,8 +1,6 @@
 ﻿
 define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'], function (buttonFactory, mechanics, draw) {
     return {
-        _created: false,
-        _game: null,
         screenBackground: {
             key: 'screenBackground',
             src: 'Resources/background_1.png'
@@ -12,10 +10,10 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
             small3x3: {
                 v: 3,
                 h: 3,
-                vpad: 20,
-                hpad: 20,
-                top: 130,
-                left: 66,
+                vpad: 10,
+                hpad: 10,
+                top: 170,
+                left: 85,
             },
             medium4x4: {
                 v: 4,
@@ -45,6 +43,13 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
             History: null
         },
 
+        // object structure:
+        //   line: the lineDisplayElement from drawing controls. used to retrieve generated path.
+        //   display: function which returns the display object, used to add/remove from display.
+        //   buttons: array of button objects in order of selection.
+        _historyOfLines: [],
+        _created: false,
+        _game: null,
         _lockButtons: null,
         _display: null,
         
@@ -66,15 +71,11 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
         },
 
         create: function (game) {
-            this._lockPattern = this.lockPatterns.odd5x3;
+            this._lockPattern = this.lockPatterns.small3x3;
 
             this._createDisplay(game);
-
             this._createLockButtons(game);
-
             this._initGameMechanics();
-
-            this._UserLineCreation = false;
             this._game = game;
         },
 
@@ -96,7 +97,6 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
         getDisplay: function (game) {
             return this._display;
         },
-        _historyOfLines: [],
 
         _lineDisplay: {
             _activeLine: null,
@@ -137,18 +137,22 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
                     this._activeLine.createLine();
                 }
             },
-            Finalize: function () {
+            Finalize: function (hisotry) {
                 if (this._isActive) {
                     this._activeLine.removeLine();
-                    //var 
-                    this._historyOfLines.push(this._activeLine);
+                    var historyLine = {
+                        line: this._activeLine,
+                        buttons: this._selectedButtons,
+                        display: function () {
+                            return this.line.getGroup();
+                        }
+                    };
 
-                    this._display.remove(this._activeLine.getGroup());
-                    
                     this._activeLine = null;
                     this._selectedButtons = [];
-
                     this._isActive = false;
+
+                    return historyLine;
                 }
             }
         },
@@ -162,7 +166,9 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
         },
 
         _buttonOver: function (button) {
-            this._lineDisplay.Snap(button);
+            if (mechanics.checkPossible(button)) {
+                this._lineDisplay.Snap(button);
+            }
         },
 
         _buttonUp: function (pointer) {
@@ -174,22 +180,33 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
                     //button.Ping();
                 }
             }
-
-            if (this._activeLine) {
-                this._activeLine.removeLine();
-                this._UserLineCreation = false;
-                this._historyOfLines.push(this._activeLine);
-
-                this._display.remove(this._activeLine.getGroup());
-
-                this._activeLine = null;
-                this._selectedButtons = [];
+            if (this._lineDisplay && this._lineDisplay._isActive) {
+                var historyLine = this._lineDisplay.Finalize();
+                this._historyOfLines.push(historyLine);
+                this._pingButtons(historyLine, historyLine.buttons, 500);
             }
-            // this means the 
         },
 
-        _establishDisplay: function() {
-        
+        _pingButtons: function (historyLine, buttons, delay) {
+            var i = 0;
+            while (i < buttons.length) {
+                var button = buttons[i];
+                setTimeout(function (button) {
+                    button.animatePingIn();
+                }, delay * i,
+                button);
+                ++i;
+            }
+
+            setTimeout(function (historyLine, display) {
+                var i = 0;
+                while (i < buttons.length) {
+                    var button = buttons[i];
+                        button.animatePingOut();
+                    ++i;
+                }
+                display.remove(historyLine.display());
+            }, delay * i + 1000, historyLine, this._display);
         },
 
         _createLockButtons: function (game) {
@@ -214,9 +231,6 @@ define(['game/GameButtonFactory', 'game/GameMechanics', 'control/DrawingControl'
         },
 
         render: function (game) {
-            //game.debug.spriteInputInfo(this._lockButtons.children[this._lockButtons.length - 1], 0, 50, 'rgba(0, 255, 0, .5)');
-            //game.debug.spriteInputInfo(this._lockButtons, 'rgba(145, 145, 0, .5)', true);
-            //game.debug.spriteBounds(this._lockButtons.children[this._lockButtons.length - 1], 'rgba(0, 255, 0, .5)', true)
         }
     };
 });
