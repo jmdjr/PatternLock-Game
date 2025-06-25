@@ -3,6 +3,7 @@ import { AppTemplateBaseComponent, ComponentModule } from 'personal-site-templat
 import { HeaderService } from 'personal-site-template/src/app/services/header.service';
 import { HEADING, PROJECT_NAME } from '../assets/site.data';
 import { ProjectDataTrackerService } from 'personal-site-template/src/app/services/ProjectDataTracker.service';
+import { PhaserGameFrameComponent } from './components/PhaserGameFrame/PhaserGameFrame.component';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ import { ProjectDataTrackerService } from 'personal-site-template/src/app/servic
 })
 export class AppComponent {
   modules: ComponentModule[] = [
+    new ComponentModule(PhaserGameFrameComponent)
   ]
 
   constructor(private header: HeaderService,
