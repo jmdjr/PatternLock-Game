@@ -7,7 +7,7 @@ class PhaserUIBuilder {
   private config: any;
 
   constructor(config: any) {
-    this.config = config;
+    this.config = config; 
   }
 
   public buildUI(scene: Phaser.Scene) {
