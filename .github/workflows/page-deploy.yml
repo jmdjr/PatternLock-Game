@@ -94,7 +94,6 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         artifact_name: github-pages
-        preview: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
