@@ -9,6 +9,10 @@ export class LabeledButton extends Phaser.GameObjects.Container {
   private _button: Button;
   private _label: Phaser.GameObjects.Text;
 
+  public get button() {
+    return this._button;
+  }
+
   constructor(scene: CoreScene, asset: Asset, x: number = 0, y: number = 0, label: string = "A") {
     super(scene, x, y);
 
@@ -41,23 +45,23 @@ export class LabeledButton extends Phaser.GameObjects.Container {
         this._label.setText(text);
         return this;
       },
-      click: (callback: () => void) => {
+      click: (callback: (button: Button) => void) => {
         this._button.set.click(callback);
         return this;
       },
-      over: (callback: () => void) => {
+      over: (callback: (button: Button) => void) => {
         this._button.set.over(callback);
         return this;
       },
-      out: (callback: () => void) => {
+      out: (callback: (button: Button) => void) => {
         this._button.set.out(callback);
         return this;
       },
-      down: (callback: () => void) => {
+      down: (callback: (button: Button) => void) => {
         this._button.set.down(callback);
         return this;
       },
-      up: (callback: () => void) => {
+      up: (callback: (button: Button) => void) => {
         this._button.set.up(callback);
         return this;
       }

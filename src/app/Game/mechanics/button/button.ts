@@ -4,11 +4,11 @@ import CoreScene from "../../scenes/core_scene";
 export default class Button extends Phaser.GameObjects.Sprite {
   static readonly TYPE: string = 'BUTTON';
 
-  private _onDown: () => void;
-  private _onOver: () => void;
-  private _onUp: () => void;
-  private _onOut: () => void;
-  private _onClick: () => void;
+  private _onDown: (button: Button) => void;
+  private _onOver: (button: Button) => void;
+  private _onUp: (button: Button) => void;
+  private _onOut: (button: Button) => void;
+  private _onClick: (button: Button) => void;
   private _asset: Asset;
 
   constructor(scene: CoreScene, asset: Asset, x: number = 0, y: number = 0) {
@@ -35,23 +35,23 @@ export default class Button extends Phaser.GameObjects.Sprite {
 
   public get set() {
     return {
-      down: (callback: () => void) => {
+      down: (callback: (button: Button) => void) => {
         this._onDown = callback;
         return this;
       },
-      over: (callback: () => void) => {
+      over: (callback: (button: Button) => void) => {
         this._onOver = callback;
         return this;
       },
-      out: (callback: () => void) => {
+      out: (callback: (button: Button) => void) => {
         this._onOut = callback;
         return this;
       },
-      up: (callback: () => void) => {
+      up: (callback: (button: Button) => void) => {
         this._onUp = callback;
         return this;
       },
-      click: (callback: () => void) => {
+      click: (callback: (button: Button) => void) => {
         this._onClick = callback;
         return this;
       }
@@ -59,22 +59,22 @@ export default class Button extends Phaser.GameObjects.Sprite {
   }
 
   private onClick() {
-    this._onClick?.call(this);
+    this._onClick?.call(this, this);
   }
 
   private onOver() {
-    this._onOver?.call(this);
+    this._onOver?.call(this, this);
   }
 
   private onOut() {
-    this._onOut?.call(this);
+    this._onOut?.call(this, this);
   }
 
   private onUp() {
-    this._onUp?.call(this);
+    this._onUp?.call(this, this);
   }
 
   private onDown() {
-    this._onDown?.call(this);
+    this._onDown?.call(this, this);
   }
 }

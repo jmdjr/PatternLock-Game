@@ -21,7 +21,11 @@ export class PhaserGameFrameComponent implements OnInit {
       backgroundColor: '#000000',
       banner: false,
       scale: {
-        mode: Phaser.Scale.FIT
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+      dom: {
+        createContainer: true
       },
       scene: this.coreScene,
       physics: {
