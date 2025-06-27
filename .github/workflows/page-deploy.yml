@@ -81,7 +81,7 @@ jobs:
     - name: Build
       uses: actions/jekyll-build-pages@v1
     - name: Artifacts to be uploaded
-      run: ls -la
+      run: tree -a
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
   deploy:
