@@ -85,6 +85,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build-to-artifact
+    permissions: 
+      id-token: write
     steps:
     - name: Deploy to GitHub pages
       id: deployment
