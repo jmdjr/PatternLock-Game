@@ -87,6 +87,8 @@ jobs:
     needs: build-to-artifact
     permissions: 
       id-token: write
+      pages: write
+      contents: write
     steps:
     - name: Deploy to GitHub pages
       id: deployment
