@@ -1,14 +1,55 @@
-type CommandHandler = (args: string[], game: Phaser.Scene) => string | Promise<string>;
 
-interface ConsoleCommand {
+export type CommandHandler = (args: string[], game: Phaser.Scene) => string | Promise<string>;
+
+export interface ConsoleCommand {
+  context: any;
   description: string;
   handler: CommandHandler;
 }
 
+const CONSOLE_COMMANDS: Map<string, ConsoleCommand> = new Map([
+  ['help', {
+    context: null,
+    description: 'List available commands',
+      handler: () => Object.entries(CONSOLE_COMMANDS)
+        .map(([cmd, { description }]) => `${cmd}: ${description}`).join('\n')
+  }],
+  ['echo', {
+    context: null,
+    description: 'Echo input',
+      handler: (args) => args.join(' ')
+  }],
+  ['state', {
+    context: null,
+    description: 'Display game state',
+      handler: (_, game) => JSON.stringify(game.data ? game.data.getAll() : {}, null, 2)
+  }],
+  ['set', {
+    context: null,
+    description: 'Set game state variable. Usage: set key value',
+      handler: (args, game) => {
+        if (args.length < 2) return 'Usage: set key value';
+        if (game.data) game.data.set(args[0], args.slice(1).join(' '));
+        return `Set ${args[0]}`;
+      }
+  }]
+]);
+
+function ConsoleCommand(commandName: string, description: string) {
+  return function(context: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    // Register the command
+    CONSOLE_COMMANDS.set(commandName ?? propertyKey, {
+      context,
+      description,
+      handler: descriptor.value
+    });
+  }
+}
+
+
 export class GameConsole extends Phaser.GameObjects.Container {
   private inputText: Phaser.GameObjects.DOMElement;
   private outputText: Phaser.GameObjects.Text;
-  private commands: Record<string, ConsoleCommand>;
   private history: string[] = [];
   private historyIndex: number = -1;
 
@@ -43,39 +84,6 @@ export class GameConsole extends Phaser.GameObjects.Container {
 
     this.setSize(width, height);
 
-    // Command registry
-    this.commands = {
-      help: {
-        description: 'List available commands',
-        handler: () => Object.entries(this.commands)
-          .map(([cmd, { description }]) => `${cmd}: ${description}`).join('\n')
-      },
-      echo: {
-        description: 'Echo input',
-        handler: (args) => args.join(' ')
-      },
-      state: {
-        description: 'Display game state',
-        handler: (_, game) => JSON.stringify(game.data ? game.data.getAll() : {}, null, 2)
-      },
-      set: {
-        description: 'Set game state variable. Usage: set key value',
-        handler: (args, game) => {
-          if (args.length < 2) return 'Usage: set key value';
-          if (game.data) game.data.set(args[0], args.slice(1).join(' '));
-          return `Set ${args[0]}`;
-        }
-      },
-      exit: {
-        description: 'Exit the console',
-        handler: () => {
-          this.hideConsole();
-          return 'Console hidden';
-        }
-      }
-      // Add more commands as needed
-    };
-
     // Input event
     this.inputText.node.addEventListener('keydown', (evt: Event) => {
       if(!(evt instanceof KeyboardEvent)) return;
@@ -102,6 +110,7 @@ export class GameConsole extends Phaser.GameObjects.Container {
     });
   }
   
+  @ConsoleCommand('exit', 'Exits the console')
   hideConsole() {
     this.inputText.setVisible(false);
     this.outputText.setVisible(false);
@@ -119,13 +128,13 @@ export class GameConsole extends Phaser.GameObjects.Container {
   private async executeCommand(input: string) {
     this.print(`> ${input}`);
     const [cmd, ...args] = input.trim().split(/\s+/);
-    const command = this.commands[cmd];
+    const command = CONSOLE_COMMANDS.get(cmd);
     if (!command) {
       this.print(`Unknown command: ${cmd}`);
       return;
     }
     try {
-      const result = await command.handler(args, this.scene);
+      const result = await command.handler.bind(command.context)(args, this.scene);
       if (result) this.print(result);
     } catch (e) {
       this.print(`Error: ${(e as Error).message}`);

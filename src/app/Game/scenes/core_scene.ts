@@ -2,7 +2,7 @@ import ASSETS from '../assets.data';
 import Phaser from 'phaser';
 import { ButtonPanel } from '../mechanics/button/buttonPanel';
 import Path from '../mechanics/path/path';
-import { GameConsole } from '../mechanics/ui/console';
+import { GameConsole } from '../services/console';
 import { VisualPathGuess } from '../mechanics/path/visualPathGuess';
 
 export default class CoreScene extends Phaser.Scene {
