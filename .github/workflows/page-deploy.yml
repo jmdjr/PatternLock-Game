@@ -77,7 +77,6 @@ jobs:
       uses: actions/deploy-pages@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifact_name: github-pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
