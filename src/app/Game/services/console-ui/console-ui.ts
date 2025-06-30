@@ -1,4 +1,4 @@
-import { Inject } from "../di/di-container";
+import { Inject } from "../di/di.system";
 import { CONSOLE_COMMANDS, ConsoleSystem } from "../console-system/console-system";
 
 export class GameConsole extends Phaser.GameObjects.Container {
@@ -7,14 +7,14 @@ export class GameConsole extends Phaser.GameObjects.Container {
   private history: string[] = [];
   private historyIndex: number = -1;
 
-  @Inject('ConsoleSystem')
+  @Inject(ConsoleSystem.name)
   private consoleSystem: ConsoleSystem;
   
   constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
     super(scene, x, y);
 
     // Output area
-    this.outputText = scene.add.text(0, 0, '', {
+    this.outputText = scene.add.text(0, 16, '', {
       fontFamily: 'monospace',
       fontSize: '16px',
       color: '#00ff00',
@@ -44,25 +44,28 @@ export class GameConsole extends Phaser.GameObjects.Container {
     // Input event
     this.inputText.node.addEventListener('keydown', (evt: Event) => {
       if(!(evt instanceof KeyboardEvent)) return;
-
-      if (evt.key === 'Enter') {
-        const value = (this.inputText.node as HTMLInputElement).value;
-        this.executeCommand(value);
-        this.history.push(value);
-        this.historyIndex = this.history.length;
-        (this.inputText.node as HTMLInputElement).value = '';
-      } else if (evt.key === 'ArrowUp') {
-        if (this.historyIndex > 0) {
-          this.historyIndex--;
-          (this.inputText.node as HTMLInputElement).value = this.history[this.historyIndex] || '';
-        }
-      } else if (evt.key === 'ArrowDown') {
-        if (this.historyIndex < this.history.length - 1) {
-          this.historyIndex++;
-          (this.inputText.node as HTMLInputElement).value = this.history[this.historyIndex] || '';
-        } else {
-          (this.inputText.node as HTMLInputElement).value = '';
-        }
+      let present = '';
+      switch (evt.key) {
+        case 'Enter':
+          const value = (this.inputText.node as HTMLInputElement).value;
+          this.executeCommand(value);
+          this.history.push(value);
+          this.historyIndex = this.history.length;
+          break;
+        case 'ArrowUp':
+          if (this.historyIndex > 0) {
+            this.historyIndex--;
+            (this.inputText.node as HTMLInputElement).value = this.history[this.historyIndex] || '';
+          }
+          break;
+        case 'ArrowDown':
+          if (this.historyIndex < this.history.length - 1) {
+            this.historyIndex++;
+            (this.inputText.node as HTMLInputElement).value = this.history[this.historyIndex] || '';
+          } else {
+            (this.inputText.node as HTMLInputElement).value = '';
+          }
+          break;
       }
 
       this.updateConsoleUI();
@@ -71,7 +74,7 @@ export class GameConsole extends Phaser.GameObjects.Container {
   }
 
   hideConsole() {
-    this.consoleSystem?.hideConsoleUI();
+    ConsoleSystem.hideConsoleUI();
     this.updateConsoleUI();
   }
 

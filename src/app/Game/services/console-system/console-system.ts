@@ -1,4 +1,4 @@
-import { GlobalContainer } from "../di/di-container";
+import { InlineResolve, Register } from "../di/di.system";
 
 export type CommandHandler = (args: string[], game: Phaser.Scene) => string | Promise<string>;
 
@@ -41,12 +41,13 @@ export function ConsoleCommand(commandName: string, description: string) {
   }
 }
 
+@Register(ConsoleSystem.name)
 export class ConsoleSystem {
   private enable_console_ui_visibility: boolean = false;
 
   @ConsoleCommand('exit', 'Exits the console')
-  hideConsoleUI() {
-    const instance = GlobalContainer.resolve<ConsoleSystem>('ConsoleSystem');
+  static hideConsoleUI() {
+    const instance = InlineResolve<ConsoleSystem>(ConsoleSystem.name);
     instance.enable_console_ui_visibility = false;
   }
 

@@ -1,6 +1,5 @@
 import ASSETS from '../assets.data';
 import Phaser from 'phaser';
-import "src/app/Game/di-register";
 
 import Path from '../mechanics/path/path';
 import { ButtonPanel } from '../mechanics/button/buttonPanel';
