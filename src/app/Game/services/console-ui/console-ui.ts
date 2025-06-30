@@ -1,51 +1,5 @@
-
-export type CommandHandler = (args: string[], game: Phaser.Scene) => string | Promise<string>;
-
-export interface ConsoleCommand {
-  context: any;
-  description: string;
-  handler: CommandHandler;
-}
-
-const CONSOLE_COMMANDS: Map<string, ConsoleCommand> = new Map([
-  ['help', {
-    context: null,
-    description: 'List available commands',
-      handler: () => Object.entries(CONSOLE_COMMANDS)
-        .map(([cmd, { description }]) => `${cmd}: ${description}`).join('\n')
-  }],
-  ['echo', {
-    context: null,
-    description: 'Echo input',
-      handler: (args) => args.join(' ')
-  }],
-  ['state', {
-    context: null,
-    description: 'Display game state',
-      handler: (_, game) => JSON.stringify(game.data ? game.data.getAll() : {}, null, 2)
-  }],
-  ['set', {
-    context: null,
-    description: 'Set game state variable. Usage: set key value',
-      handler: (args, game) => {
-        if (args.length < 2) return 'Usage: set key value';
-        if (game.data) game.data.set(args[0], args.slice(1).join(' '));
-        return `Set ${args[0]}`;
-      }
-  }]
-]);
-
-function ConsoleCommand(commandName: string, description: string) {
-  return function(context: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    // Register the command
-    CONSOLE_COMMANDS.set(commandName ?? propertyKey, {
-      context,
-      description,
-      handler: descriptor.value
-    });
-  }
-}
-
+import { Inject } from "../di/di-container";
+import { CONSOLE_COMMANDS, ConsoleSystem } from "../console-system/console-system";
 
 export class GameConsole extends Phaser.GameObjects.Container {
   private inputText: Phaser.GameObjects.DOMElement;
@@ -53,6 +7,9 @@ export class GameConsole extends Phaser.GameObjects.Container {
   private history: string[] = [];
   private historyIndex: number = -1;
 
+  @Inject('ConsoleSystem')
+  private consoleSystem: ConsoleSystem;
+  
   constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
     super(scene, x, y);
 
@@ -78,10 +35,10 @@ export class GameConsole extends Phaser.GameObjects.Container {
       border: 'none',
       outline: 'none',
       padding: '4px'
-    });``
+    });
     this.inputText.setOrigin(0, 0);
-    this.add(this.inputText);
 
+    this.add(this.inputText);
     this.setSize(width, height);
 
     // Input event
@@ -107,22 +64,30 @@ export class GameConsole extends Phaser.GameObjects.Container {
           (this.inputText.node as HTMLInputElement).value = '';
         }
       }
+
+      this.updateConsoleUI();
     });
+    this.hideConsole();
   }
-  
-  @ConsoleCommand('exit', 'Exits the console')
+
   hideConsole() {
-    this.inputText.setVisible(false);
-    this.outputText.setVisible(false);
+    this.consoleSystem?.hideConsoleUI();
+    this.updateConsoleUI();
   }
 
   showConsole() {
-    this.inputText.setVisible(true);
-    this.outputText.setVisible(true);
+    this.consoleSystem?.showConsoleUI();
+    this.updateConsoleUI();
 
     setTimeout(() => {
       (this.inputText.node as HTMLInputElement).focus();
     });
+  }
+
+  updateConsoleUI() {
+    const visible = this.consoleSystem?.getConsoleUIStatus() ?? false;
+    this.inputText.setVisible(visible);
+    this.outputText.setVisible(visible);
   }
 
   private async executeCommand(input: string) {
@@ -134,7 +99,7 @@ export class GameConsole extends Phaser.GameObjects.Container {
       return;
     }
     try {
-      const result = await command.handler.bind(command.context)(args, this.scene);
+      const result = await command.handler(args, this.scene);
       if (result) this.print(result);
     } catch (e) {
       this.print(`Error: ${(e as Error).message}`);
@@ -150,3 +115,5 @@ export class GameConsole extends Phaser.GameObjects.Container {
     }
   }
 }
+export { ConsoleSystem };
+

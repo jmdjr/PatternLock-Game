@@ -7,7 +7,6 @@ import CoreScene from 'src/app/Game/scenes/core_scene';
   styleUrls: ['./PhaserGameFrame.component.css']
 })
 export class PhaserGameFrameComponent implements OnInit {
-
   game: Phaser.Game | null;
   coreScene: CoreScene;
   constructor() { }
