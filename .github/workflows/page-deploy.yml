@@ -61,7 +61,7 @@ jobs:
         PROJECT_NAME="${{ github.event.repository.name }}"
         mkdir -p "../../dist/$PROJECT_NAME"
         cp -r ../../dist/browser/* "../../dist/$PROJECT_NAME/"
-        mv "../../dist/$PROJECT_NAME/index.html" "../../dist/index.html
+        mv "../../dist/$PROJECT_NAME/index.html" "../../dist/index.html"
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
