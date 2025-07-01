@@ -54,18 +54,14 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+    # - name: Run tests
+    #   run: cd Shutdown/jmdjr.github.io && npm run test:headless
     - name: Build
       run: npm run build
-    - name: Move build artifacts to project folder
-      run: |
-        PROJECT_NAME="${{ github.event.repository.name }}"
-        mkdir -p "../../dist/$PROJECT_NAME"
-        cp -r ../../dist/browser/* "../../dist/$PROJECT_NAME/"
-        mv "../../dist/$PROJECT_NAME/index.html" "../../dist/index.html"
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ../../dist # <-- Change this if your build output goes elsewhere
+        path: ../../dist/browser # <-- Change this if your build output goes elsewhere
 
   deploy:
     runs-on: ubuntu-latest
