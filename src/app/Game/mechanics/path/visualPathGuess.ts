@@ -63,11 +63,12 @@ export class VisualPathGuess {
 
     const points = this.currentPathIndexes.map(idx => {
       const btn = this.panel.getAll()[idx] as LabeledButton;
-      return new Phaser.Math.Vector2(btn.x, btn.y);
+      return this.shiftVector(btn.x, btn.y);
     });
 
     this.pathGraphics.beginPath();
     this.pathGraphics.moveTo(points[0].x, points[0].y);
+
     for (let i = 1; i < points.length; i++) {
       this.pathGraphics.lineTo(points[i].x, points[i].y);
     }
@@ -80,12 +81,17 @@ export class VisualPathGuess {
 
     const lastPoint = this.currentPathIndexes[this.currentPathIndexes.length - 1];
     const btn = this.panel.getAll()[lastPoint] as LabeledButton;
+    const pt = this.shiftVector(btn.x, btn.y);
 
     this.draggedGraphics.clear();
     this.draggedGraphics.lineStyle(4, 0xff0000);
     this.draggedGraphics.beginPath();
-    this.draggedGraphics.moveTo(btn.x, btn.y);
+    this.draggedGraphics.moveTo(pt.x, pt.y);
     this.draggedGraphics.lineTo(x, y);
     this.draggedGraphics.strokePath();
+  }
+
+  private shiftVector(dx: number, dy: number): Phaser.Math.Vector2 {
+    return new Phaser.Math.Vector2(dx + this.panel.x, dy + this.panel.y);
   }
 }
