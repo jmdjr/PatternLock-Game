@@ -1,11 +1,14 @@
 import { Asset, getAssetByType } from "../../assets.data";
 import CoreScene from "../../scenes/core_scene";
+import { Inject } from "../../services/di/di.system";
+import { UIBuilder } from "../ui/uiFormatter";
 import Button from "./button";
 
 export class LabeledButton extends Phaser.GameObjects.Container {
   static readonly TYPE: string = 'LABELED_BUTTON';
   private _asset: Asset;
 
+  
   private _button: Button;
   private _label: Phaser.GameObjects.Text;
 

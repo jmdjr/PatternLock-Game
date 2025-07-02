@@ -1,30 +1,24 @@
 import { Register } from '../../services/di/di.system';
 import uiConfig from '../../ui.config.json';
-
-// this class is repsonsible for positioning different Game Objects on the screen
-// by adding ui elements with a specific key name, the builder will position them
-// according to the key names found in the ui.config.json file.
+import { UI_CONFIG_KEY, UIConfig } from './ui.config';
 
 @Register()
-export class PhaserUIBuilder {
-  private config: any;
-  private width: number = uiConfig.width;
-  private height: number = uiConfig.height;
-  private backgroundColor: string = uiConfig.backgroundColor;
-  
+export class UIBuilder {
+  private _config: UIConfig = uiConfig;
+  private _elements: Map<string, (x: number, y: number) => void> = new Map();
 
-  constructor(config: any) {
-    this.config = config; 
+  public buildUI() {
+    const elementMap = this._elements;
+    this._config.ui.map((element) => {
+      const construct = elementMap.get(element.key);
+      if (construct) {
+        construct(element.x, element.y);
+      }
+    });
   }
 
-  public buildUI(scene: Phaser.Scene) {
-    for (const element of this.config) {
-      const { type, key, x, y } = element;
-      this.addElement(scene, type, key, x, y);
-    }
-  }
-
-  private addElement(scene: Phaser.Scene, type: string, key: string, x: number, y: number) {
+  addElement(key: UI_CONFIG_KEY, construct: (x: number, y: number) => void) {
     // Implementation for adding the element to the scene
+    this._elements.set(key, construct);
   }
 }

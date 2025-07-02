@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import CoreScene from 'src/app/Game/scenes/core_scene';
 
 import uiConfig from '../../Game/ui.config.json';
+import { UIConfig } from '../../Game/mechanics/ui/ui.config';
 
 @Component({
   selector: 'app-PhaserGameFrame',
@@ -12,6 +13,8 @@ import uiConfig from '../../Game/ui.config.json';
 export class PhaserGameFrameComponent implements OnInit {
   game: Phaser.Game | null;
   coreScene: CoreScene;
+  uiConfig: UIConfig = uiConfig;
+
   constructor() { }
 
   ngOnInit() {
@@ -20,11 +23,11 @@ export class PhaserGameFrameComponent implements OnInit {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.WEBGL,
       parent: 'game-frame',
-      backgroundColor: uiConfig.backgroundColor,
+      backgroundColor: this.uiConfig.backgroundColor,
       banner: false,
       scale: {
-        height: uiConfig.height,
-        width: uiConfig.width,
+        height: this.uiConfig.height,
+        width: this.uiConfig.width,
         mode: Phaser.Scale.FIT,
       },
       dom: {
@@ -40,5 +43,11 @@ export class PhaserGameFrameComponent implements OnInit {
     };
 
     this.game = new Phaser.Game(config);
+  }
+
+  goFullScreen() {
+    if (!this.game) return;
+
+    this.game.scale.startFullscreen();
   }
 }

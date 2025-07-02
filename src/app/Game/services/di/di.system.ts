@@ -1,7 +1,5 @@
 export type Constructor<T = any> = new (...args: any[]) => T;
 
-// Export a global container for convenience
-
 export class DIContainer {
   private providers = new Map<string, Constructor>();
   _singletons = new Map<string, any>();
@@ -24,13 +22,9 @@ export class DIContainer {
   }
 }
 
-
-
 export function InlineResolve<T>(token: string): T {
   return GlobalContainer.resolve<T>(token);
 }
-
-const GlobalContainer = new DIContainer();
 
 export function Inject(token: string) {
   return function (target: any, propertyKey: string) {
@@ -41,6 +35,7 @@ export function Inject(token: string) {
       }
       return value;
     };
+    
     Object.defineProperty(target, propertyKey, {
       get: getter,
       enumerable: true,
@@ -49,9 +44,11 @@ export function Inject(token: string) {
   };
 }
 
-
 export function Register(token?: string) {
   return function (constructor: Constructor) {
     GlobalContainer.register(token ?? constructor.name, constructor);
   };
 }
+
+
+const GlobalContainer = new DIContainer();
