@@ -1,10 +1,17 @@
-import uiConfig from './ui.config.json';
+import { Register } from '../../services/di/di.system';
+import uiConfig from '../../ui.config.json';
 
 // this class is repsonsible for positioning different Game Objects on the screen
 // by adding ui elements with a specific key name, the builder will position them
 // according to the key names found in the ui.config.json file.
+
+@Register()
 export class PhaserUIBuilder {
   private config: any;
+  private width: number = uiConfig.width;
+  private height: number = uiConfig.height;
+  private backgroundColor: string = uiConfig.backgroundColor;
+  
 
   constructor(config: any) {
     this.config = config; 

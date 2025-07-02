@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import Phaser from 'phaser';
 import CoreScene from 'src/app/Game/scenes/core_scene';
+
+import uiConfig from '../../Game/ui.config.json';
+
 @Component({
   selector: 'app-PhaserGameFrame',
   templateUrl: './PhaserGameFrame.component.html',
@@ -17,9 +20,11 @@ export class PhaserGameFrameComponent implements OnInit {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.WEBGL,
       parent: 'game-frame',
-      backgroundColor: '#000000',
+      backgroundColor: uiConfig.backgroundColor,
       banner: false,
       scale: {
+        height: uiConfig.height,
+        width: uiConfig.width,
         mode: Phaser.Scale.FIT,
       },
       dom: {
