@@ -46,8 +46,16 @@ export class PhaserGameFrameComponent implements OnInit {
   }
 
   goFullScreen() {
-    if (!this.game) return;
+    if (!this.game) {
+      alert('Game is not initialized yet.');
+      return;
+    }
+    if (this.game.scale.isFullscreen) {
+      this.game.scale.stopFullscreen();
+      return;
+    }
 
+    // Start fullscreen mode
     this.game.scale.startFullscreen();
   }
 }
