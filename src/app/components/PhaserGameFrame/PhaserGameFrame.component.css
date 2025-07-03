@@ -7,3 +7,7 @@
   width: 85vw;
   overflow: hidden;
 }
+
+#user-input {
+  user-select: none;
+}
