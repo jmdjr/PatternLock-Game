@@ -37,7 +37,6 @@ export class GameConsole extends Phaser.GameObjects.Container {
       padding: '4px'
     });
     this.inputText.setOrigin(0, 0);
-
     this.add(this.inputText);
     this.setSize(width, height);
 

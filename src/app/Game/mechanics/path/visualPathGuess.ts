@@ -1,8 +1,10 @@
+import { GameEvents } from "../../scenes/core_scene";
 import { ButtonPanel } from "../button/buttonPanel";
 import { LabeledButton } from "../button/labeledButton";
+import { PathSequence } from "./path";
 
-export class VisualPathGuess {
-  private currentPathIndexes: number[] = [];
+export class VisualPathGuess extends Phaser.Events.EventEmitter {
+  private currentPathIndexes: PathSequence = [];
   private isDrawingPath: boolean = false;
   private pathGraphics?: Phaser.GameObjects.Graphics;
   private draggedGraphics?: Phaser.GameObjects.Graphics;
@@ -10,6 +12,7 @@ export class VisualPathGuess {
   private panel: ButtonPanel;
 
   constructor(scene: Phaser.Scene, panel: ButtonPanel) {
+    super();
     this.scene = scene;
     this.panel = panel;
     this.setupPathDrawingSystem();
@@ -17,6 +20,16 @@ export class VisualPathGuess {
 
   public print() {
     return this.currentPathIndexes.join('->');
+  }
+
+  public get path() {
+    return this.currentPathIndexes
+  }
+
+  public reset() {
+    this.currentPathIndexes = [];
+    this.pathGraphics?.clear();
+    this.draggedGraphics?.clear();
   }
 
   private setupPathDrawingSystem() {
@@ -39,6 +52,7 @@ export class VisualPathGuess {
       });
 
     this.scene.input.on('pointerup', () => {
+      if(!this.isDrawingPath) return;
       this.stopDrawingPath();
     });
 
@@ -52,6 +66,7 @@ export class VisualPathGuess {
     if (this.isDrawingPath) {
       this.isDrawingPath = false;
       this.draggedGraphics?.clear();
+      this.emit(GameEvents.PATH_DRAWN_END, this.path);
     }
   }
 

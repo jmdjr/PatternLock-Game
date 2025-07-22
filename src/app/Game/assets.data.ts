@@ -1,6 +1,6 @@
 import Button from './mechanics/button/button';
+import { FlexButton } from './mechanics/button/flexButton';
 import { LabeledButton } from './mechanics/button/labeledButton';
-import { ButtonPanel } from './mechanics/button/buttonPanel';
 
 export interface Asset {
   type: string;
@@ -21,6 +21,12 @@ const startBurstArt = {
   height: 64
 };
 
+// const flexButtonArt = {
+//   url: 'assets/game/art/flexButton.png',
+//   width: 64,
+//   height: 64
+// };
+
 const ASSETS = [
   {
     type: LabeledButton.TYPE,
@@ -30,12 +36,20 @@ const ASSETS = [
   {
     type: Button.TYPE,
     ...startBurstArt
-  }
+  }, 
+  // {
+  //   type: FlexButton.TYPE,
+  //   ...flexButtonArt
+  // }
 ];
 
-export const getAssetByType = (type: string): Asset | undefined => {
+export const getAssetByType = (type: string): Asset => {
   const asset = ASSETS.find(asset => asset.type === type);
-  if (!asset)  console.error(`Asset of type ${type} not found.`);
+
+  if (!asset)  {
+    throw new Error(`Asset of type ${type} not found.`);
+  }
+
   return asset;
 };
 

@@ -1,20 +1,25 @@
-import CoreScene from "../../scenes/core_scene";
-
+export type PathSequence = number[];
+export function PercentRight(guess: PathSequence, actual: PathSequence): number {
+  if (guess.length === 0) return 0;
+  const maxScore = actual.length * 2;
+  const correct = guess.reduce((acc, val, idx) => acc + (val === actual[idx] ? 2 : actual.includes(val) ? 1 : 0), 0);
+  return Math.round(correct / maxScore * 100);
+}
 export default class Path {
   static readonly STANDARD_NUM_BUTTONS: number = 9;
   static readonly STANDARD_PATH_LENGTH: number = 5;
-  private _path: number[] = [];
+  private _path: PathSequence = [];
   private _numButtons: number = Path.STANDARD_NUM_BUTTONS;
   private _pathLength: number = Path.STANDARD_PATH_LENGTH;
 
   constructor(pathLength: number = Path.STANDARD_PATH_LENGTH, numButtons: number = Path.STANDARD_NUM_BUTTONS) {
     this._pathLength = pathLength;
     this._numButtons = numButtons;
-    this.regen(); // Generate a new path on creation
+    this.reset(); // Generate a new path on creation
   }
 
   // Shuffle the buttons indicies in the path.
-  public regen() {
+  public reset() {
     this._path = Array
       .from({ length: this._numButtons },
         (_, i) => i)
@@ -22,7 +27,7 @@ export default class Path {
       .slice(0, this._pathLength);      // Take the first `pathLength` elements
   }
 
-  public tryOrder(indexes: number[]): boolean {
+  public tryOrder(indexes: PathSequence): boolean {
     if (indexes.length !== this._path.length) {
       return false; // Invalid length
     }
@@ -35,9 +40,9 @@ export default class Path {
     return true; // All indexes match the path
   }
 
-  print(): string | string[] {
+  print(): string {
     return this._path.join("->");
   }
 
-  public get get(): number[] { return this._path; }
+  public get get(): PathSequence { return this._path; }
 }

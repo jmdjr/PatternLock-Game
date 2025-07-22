@@ -1,28 +1,44 @@
-import { getAssetByType } from '../../assets.data';
+import { Asset, getAssetByType } from '../../assets.data';
 import Button from './button';
 import Phaser, { GameObjects } from 'phaser';
 import CoreScene from '../../scenes/core_scene';
 import { LabeledButton } from './labeledButton';
+import { VisualPathGuess } from '../path/visualPathGuess';
 
 export class ButtonPanel extends Phaser.GameObjects.Container {
   static readonly TYPE: string = 'BUTTON_PANEL';
   static readonly WIDTH: number = 3;
   static readonly HEIGHT: number = 3;
 
+  private visualPath: VisualPathGuess;
+
+  private _addButton(x: number, y: number, asset: Asset) {
+    const label = this._scene.data.get("debug") ? `${x + ButtonPanel.WIDTH * y}` : ''; // Generate a label based on position
+    this.add(new LabeledButton(this._scene, asset, x, y, label));
+  }
+
   constructor(private _scene: CoreScene, x, y) {
     super(_scene, x, y);
     this._scene.add.existing(this);
     this.layout();
+    this.visualPath = new VisualPathGuess(this._scene, this);
+  }
+
+  get pathVisual() {
+    return this.visualPath;
+  }
+
+  override update(x: number, y: number) {
+    super.update(x, y);
+    this.visualPath.update(x, y);
   }
 
   layout() {
-    const assetType = LabeledButton;
-
-    const asset = getAssetByType(assetType.TYPE);
+    const asset = getAssetByType(LabeledButton.TYPE);
     if (!asset) return; // Ensure the button asset exists
 
     const addButton = (x, y) => {
-      this.add(new assetType(this._scene, asset, x, y, `${x + ButtonPanel.WIDTH * y}`));
+      this._addButton(x, y, asset);
     }
 
     // Create a grid of buttons
@@ -33,7 +49,7 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
         )
     );
 
-    const gap = asset.width * 1; // 10% of the asset width as gap
+    const gap = asset.width * 2; // 10% of the asset width as gap
     const cellWidth = asset.width + gap;
     const cellHeight = asset.height + gap;
     const allButtons = this.getAll();
@@ -50,8 +66,8 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
     // set all buttons over to change color on hover
     allButtons.forEach((button: GameObjects.GameObject) => {
       if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
-      const labeledButton = button as LabeledButton;
-      
+      const labeledButton = button;
+
       labeledButton.set.over(() => {
         labeledButton.setTint(0x00FF00);
       });
@@ -65,42 +81,33 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
     // this._scene.add.rectangle(this.x, this.y, width * cellWidth, height * cellHeight, 0xFF0000, 0.25).setOrigin(0, 0);
   }
 
+  private _callOnAllButtons(method: string, callback: (button: Button, index: number) => void) {
+    this.getAll().forEach((button: GameObjects.GameObject, index: number) => {
+      if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
+      const labeledButton = button;
+      if (labeledButton.button.set[method]) {
+        labeledButton.button.set[method](callback.bind(null, labeledButton.button, index));
+      }
+    });
+    return this;
+  }
+
   public get set() {
     return {
       click: (callback: (button: Button, index: number) => void) => {
-        this.getAll().forEach((button: GameObjects.GameObject, index: number) => {
-          if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
-          (button as LabeledButton).set.click(callback.bind(null, button.button, index));
-        });
-        return this;
+        return this._callOnAllButtons('click', callback);
       },
       over: (callback: (button: Button, index: number) => void) => {
-        this.getAll().forEach((button: GameObjects.GameObject, index: number) => {
-          if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
-          (button as LabeledButton).set.over(callback.bind(null, button.button, index));
-        });
-        return this;
+        return this._callOnAllButtons('over', callback);
       },
       out: (callback: (button: Button, index: number) => void) => {
-        this.getAll().forEach((button: GameObjects.GameObject, index: number) => {
-          if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
-          (button as LabeledButton).set.out(callback.bind(null, button.button, index));
-        });
-        return this;
+        return this._callOnAllButtons('out', callback);
       },
       down: (callback: (button: Button, index: number) => void) => {
-        this.getAll().forEach((button: GameObjects.GameObject, index: number) => {
-          if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
-          (button as LabeledButton).set.down(callback.bind(null, button.button, index));
-        });
-        return this;
+        return this._callOnAllButtons('down', callback);
       },
       up: (callback: (button: Button, index: number) => void) => {
-        this.getAll().forEach((button: GameObjects.GameObject, index: number) => {
-          if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
-          (button as LabeledButton).set.up(callback.bind(null, button.button, index));
-        });
-        return this;
+        return this._callOnAllButtons('up', callback);
       }
     };
   }

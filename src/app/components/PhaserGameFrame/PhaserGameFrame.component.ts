@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import CoreScene from 'src/app/Game/scenes/core_scene';
 
 import uiConfig from '../../Game/ui.config.json';
-import { UIConfig } from '../../Game/mechanics/ui/ui.config';
+import { GameConfig } from '../../Game/mechanics/ui/ui.config';
 
 @Component({
   selector: 'app-PhaserGameFrame',
@@ -12,8 +12,8 @@ import { UIConfig } from '../../Game/mechanics/ui/ui.config';
 })
 export class PhaserGameFrameComponent implements OnInit {
   game: Phaser.Game | null;
-  coreScene: CoreScene;
-  uiConfig: UIConfig = uiConfig;
+  coreScene: Phaser.Scene | null;
+  uiConfig: GameConfig = uiConfig;
 
   constructor() { }
 
@@ -37,25 +37,11 @@ export class PhaserGameFrameComponent implements OnInit {
       physics: {
         default: 'arcade',
         arcade: {
-          debug: false,
+          debug: true,
         }
       }
     };
 
     this.game = new Phaser.Game(config);
-  }
-
-  goFullScreen() {
-    if (!this.game) {
-      alert('Game is not initialized yet.');
-      return;
-    }
-    if (this.game.scale.isFullscreen) {
-      this.game.scale.stopFullscreen();
-      return;
-    }
-
-    // Start fullscreen mode
-    this.game.scale.startFullscreen();
   }
 }
