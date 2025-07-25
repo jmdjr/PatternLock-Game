@@ -5,6 +5,11 @@ export function PercentRight(guess: PathSequence, actual: PathSequence): number 
   const correct = guess.reduce((acc, val, idx) => acc + (val === actual[idx] ? 2 : actual.includes(val) ? 1 : 0), 0);
   return Math.round(correct / maxScore * 100);
 }
+
+export function CountRight(guess: PathSequence, actual: PathSequence): number {
+  if (guess.length === 0) return 0;
+  return guess.reduce((acc, val, idx) => acc + (val === actual[idx] ? 1 : 0), 0);
+}
 export default class Path {
   static readonly STANDARD_NUM_BUTTONS: number = 9;
   static readonly STANDARD_PATH_LENGTH: number = 5;
@@ -19,12 +24,12 @@ export default class Path {
   }
 
   // Shuffle the buttons indicies in the path.
-  public reset() {
+  public reset(length: number = Path.STANDARD_PATH_LENGTH) {
     this._path = Array
       .from({ length: this._numButtons },
         (_, i) => i)
       .sort(() => Math.random() - 0.5)  // Shuffle the array randomly
-      .slice(0, this._pathLength);      // Take the first `pathLength` elements
+      .slice(0, length);      // Take the first `length` elements
   }
 
   public tryOrder(indexes: PathSequence): boolean {

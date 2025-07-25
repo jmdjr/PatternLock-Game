@@ -4,6 +4,7 @@ import Phaser, { GameObjects } from 'phaser';
 import CoreScene from '../../scenes/core_scene';
 import { LabeledButton } from './labeledButton';
 import { VisualPathGuess } from '../path/visualPathGuess';
+import { PathSequence } from '../path/path';
 
 export class ButtonPanel extends Phaser.GameObjects.Container {
   static readonly TYPE: string = 'BUTTON_PANEL';
@@ -110,5 +111,14 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
         return this._callOnAllButtons('up', callback);
       }
     };
+  }
+
+  public getButtonPositions(): Phaser.Math.Vector2[] {
+    return this.getAll().map((button) => {
+      if (button instanceof LabeledButton) {
+        return new Phaser.Math.Vector2(this.x + button.x , this.y + button.y);
+      }
+      return new Phaser.Math.Vector2(0, 0); // Default position if not found
+    });
   }
 }

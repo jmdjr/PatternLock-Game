@@ -34,15 +34,14 @@ export interface ScrollingListConfig {
   selectVelocityCutoff?: number;
 
   // Scroll bar styling
-  scrollBarWidth?: number;
-  scrollBarTrackColor?: number;
-  scrollBarThumbColor?: number;
-  scrollBarMargin?: number;
-  scrollBarMinThumbHeight?: number;
-  showScrollBar?: boolean;
-
-  // Layout
-  visibleItems?: number;
+  scrollBar?: {
+    width?: number;
+    trackColor?: number;
+    thumbColor?: number;
+    margin?: number;
+    minThumbHeight?: number;
+    show?: boolean;
+  };
 }
 
 export class ScrollingListBox extends Phaser.GameObjects.Container {
@@ -85,11 +84,6 @@ export class ScrollingListBox extends Phaser.GameObjects.Container {
       borderColor: 0x666666,
       borderWidth: 2,
       itemPadding: 10,
-      textStyle: {
-        fontSize: '16px',
-        color: '#ffffff',
-        fontFamily: 'Arial'
-      },
 
       // Item colors defaults
       itemBackgroundColor: 0x222222,
@@ -105,20 +99,26 @@ export class ScrollingListBox extends Phaser.GameObjects.Container {
       // Selection behavior defaults
       selectVelocityCutoff: 0.5,
 
-      // Scroll bar styling defaults
-      scrollBarWidth: 10,
-      scrollBarTrackColor: 0x555555,
-      scrollBarThumbColor: 0x888888,
-      scrollBarMargin: 2,
-      scrollBarMinThumbHeight: 20,
-      showScrollBar: true,
-
-      // Layout defaults
-      visibleItems: Math.floor(config.height / (config.itemHeight || 40)),
-
       // Override with user config
       ...config
     };
+
+    this.config.scrollBar = {
+      width: 10,
+      trackColor: 0x555555,
+      thumbColor: 0x888888,
+      margin: 2,
+      minThumbHeight: 20,
+      show: true,
+      ...(config.scrollBar || {})
+    }
+
+    this.config.textStyle = {
+      fontSize: '16px',
+      color: '#ffffff',
+      fontFamily: 'Arial',
+      ...config.textStyle
+    },
 
     this.setName('scrollingListBox_main');
     this.init();
@@ -179,20 +179,21 @@ export class ScrollingListBox extends Phaser.GameObjects.Container {
   }
 
   private createScrollBar(): void {
-    if (!this.config.showScrollBar) {
+    const sb = this.config.scrollBar;
+    if (!sb?.show) {
       return; // Don't create scrollbar if disabled
     }
 
-    const scrollBarX = this.config.width - this.config.scrollBarWidth! - this.config.scrollBarMargin!;
+    const scrollBarX = this.config.width - sb.width! - sb.margin!;
 
     // Scroll bar track
     this.scrollBar = new Phaser.GameObjects.Rectangle(
       this.scene,
       scrollBarX,
-      this.config.scrollBarMargin!,
-      this.config.scrollBarWidth!,
-      this.config.height - (this.config.scrollBarMargin! * 2),
-      this.config.scrollBarTrackColor!
+      sb.margin!,
+      sb.width!,
+      this.config.height - (sb.margin! * 2),
+      sb.trackColor!
     );
     this.scrollBar.setOrigin(0, 0);
     this.scrollBar.setName('scrollingListBox_scrollBarTrack');
@@ -202,10 +203,10 @@ export class ScrollingListBox extends Phaser.GameObjects.Container {
     this.scrollThumb = new Phaser.GameObjects.Rectangle(
       this.scene,
       scrollBarX,
-      this.config.scrollBarMargin!,
-      this.config.scrollBarWidth!,
-      this.config.scrollBarMinThumbHeight!,
-      this.config.scrollBarThumbColor!
+      sb.margin!,
+      sb.width!,
+      sb.minThumbHeight!,
+      sb.thumbColor!
     );
     this.scrollThumb.setOrigin(0, 0);
     this.scrollThumb.setInteractive();
@@ -293,8 +294,8 @@ export class ScrollingListBox extends Phaser.GameObjects.Container {
     container.setName(`scrollingListBox_itemContainer_${index}`);
 
     // Item background
-    const itemWidth = this.config.showScrollBar ?
-      this.config.width - this.config.scrollBarWidth! - this.config.scrollBarMargin! :
+    const itemWidth = this.config.scrollBar?.show ?
+      this.config.width - this.config.scrollBar?.width! - this.config.scrollBar?.margin! :
       this.config.width;
 
     const itemBg = new Phaser.GameObjects.Rectangle(
@@ -362,7 +363,8 @@ export class ScrollingListBox extends Phaser.GameObjects.Container {
   }
 
   private updateScrollBar(): void {
-    if (!this.config.showScrollBar || !this.scrollBar || !this.scrollThumb) {
+    const sb = this.config.scrollBar;
+    if (!sb?.show || !this.scrollBar || !this.scrollThumb) {
       return; // Don't update if scrollbar is disabled or not created
     }
 
@@ -371,27 +373,27 @@ export class ScrollingListBox extends Phaser.GameObjects.Container {
     if (totalContentHeight > this.config.height) {
       // Content is scrollable - show normal scrollbar behavior
       const thumbHeight = Math.max(
-        this.config.scrollBarMinThumbHeight!,
+        sb.minThumbHeight!,
         (this.config.height / totalContentHeight) * this.config.height
       );
 
-      const availableThumbSpace = this.config.height - thumbHeight - (this.config.scrollBarMargin! * 2);
+      const availableThumbSpace = this.config.height - thumbHeight - (sb.margin! * 2);
       const thumbY = this.maxScrollY > 0 ?
         (this.scrollY / this.maxScrollY) * availableThumbSpace : 0;
 
-      this.scrollThumb.setSize(this.config.scrollBarWidth!, thumbHeight);
+      this.scrollThumb.setSize(sb.width!, thumbHeight);
       this.scrollThumb.setPosition(
-        this.config.width - this.config.scrollBarWidth! - this.config.scrollBarMargin!,
-        thumbY + this.config.scrollBarMargin!
+        this.config.width - sb.width! - sb.margin!,
+        thumbY + sb.margin!
       );
       this.scrollThumb.setInteractive(); // Enable interaction
     } else {
       // Content fits entirely - show full-height thumb but disable interaction
-      const thumbHeight = this.config.height - (this.config.scrollBarMargin! * 2);
-      this.scrollThumb.setSize(this.config.scrollBarWidth!, thumbHeight);
+      const thumbHeight = this.config.height - (sb.margin! * 2);
+      this.scrollThumb.setSize(sb.width!, thumbHeight);
       this.scrollThumb.setPosition(
-        this.config.width - this.config.scrollBarWidth! - this.config.scrollBarMargin!,
-        this.config.scrollBarMargin!
+        this.config.width - sb.width! - sb.margin!,
+        sb.margin!
       );
       this.scrollThumb.disableInteractive(); // Disable interaction when no scrolling needed
     }

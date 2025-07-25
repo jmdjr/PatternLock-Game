@@ -11,6 +11,18 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
   private scene: Phaser.Scene;
   private panel: ButtonPanel;
 
+  private lineStyle = {
+    width: 32,
+    color: 0x00ff00,
+    alpha: 0.5
+  };
+
+  private draggedLineStyle = {
+    width: 32,
+    color: 0xff0000,
+    alpha: 0.5
+  };
+
   constructor(scene: Phaser.Scene, panel: ButtonPanel) {
     super();
     this.scene = scene;
@@ -32,10 +44,16 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
     this.draggedGraphics?.clear();
   }
 
+  public setPath(path: PathSequence) {
+    this.reset();
+    this.currentPathIndexes = path;
+    this.redrawPath();
+  }
+    
   private setupPathDrawingSystem() {
     // Create graphics object for drawing the path
-    this.pathGraphics = this.scene.add.graphics({ lineStyle: { width: 4, color: 0x00ff00 } });
-    this.draggedGraphics = this.scene.add.graphics({ lineStyle: { width: 4, color: 0xff0000 } });
+    this.pathGraphics = this.scene.add.graphics({ lineStyle: this.lineStyle });
+    this.draggedGraphics = this.scene.add.graphics({ lineStyle: this.draggedLineStyle });
 
     // Listen for pointer events on each button
     this.panel.set.down((_, index: number) => {
@@ -99,7 +117,6 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
     const pt = this.shiftVector(btn.x, btn.y);
 
     this.draggedGraphics.clear();
-    this.draggedGraphics.lineStyle(4, 0xff0000);
     this.draggedGraphics.beginPath();
     this.draggedGraphics.moveTo(pt.x, pt.y);
     this.draggedGraphics.lineTo(x, y);
