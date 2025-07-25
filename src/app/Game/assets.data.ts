@@ -16,7 +16,7 @@ const basicButtonArt = {
 }
 
 const startBurstArt = {
-  url: 'assets/game/art/starBurst.png',
+  url: 'assets/game/art/starBurstSolidBlack.png',
   width: 64,
   height: 64
 };
