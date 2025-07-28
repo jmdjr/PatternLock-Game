@@ -11,6 +11,8 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
   private scene: Phaser.Scene;
   private panel: ButtonPanel;
 
+  ignoreActions: boolean = false;
+
   private lineStyle = {
     width: 32,
     color: 0x00ff00,
@@ -57,12 +59,14 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
 
     // Listen for pointer events on each button
     this.panel.set.down((_, index: number) => {
+      if (this.ignoreActions) return; // Prevent starting a new path if already drawing
         this.isDrawingPath = true;
         this.currentPathIndexes = [index];
         this.redrawPath();
       });
 
     this.panel.set.over((_, index: number) => {
+      if (this.ignoreActions) return; // Prevent starting a new path if already drawing
         if (this.isDrawingPath && !this.currentPathIndexes.includes(index)) {
           this.currentPathIndexes.push(index);
           this.redrawPath();
@@ -70,12 +74,13 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
       });
 
     this.scene.input.on('pointerup', () => {
-      if(!this.isDrawingPath) return;
+      if (!this.isDrawingPath || this.ignoreActions) return;
       this.stopDrawingPath();
     });
 
     // Listen for pointer up anywhere
     this.panel.set.up(() => {
+      if (this.ignoreActions) return;
       this.stopDrawingPath();
     });
   }
@@ -110,7 +115,7 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
 
   public update(x: number, y: number) {
     // this function is used to draw one path line from the last point to the current pointer position
-    if (!this.isDrawingPath || !this.draggedGraphics) return;
+    if (!this.isDrawingPath || !this.draggedGraphics || this.ignoreActions) return;
 
     const lastPoint = this.currentPathIndexes[this.currentPathIndexes.length - 1];
     const btn = this.panel.getAll()[lastPoint] as LabeledButton;

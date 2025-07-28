@@ -17,10 +17,12 @@ export class LabeledButton extends Phaser.GameObjects.Container {
 
     this._button = new Button(scene, asset, 0, 0);
     this._button.setOrigin(0.5, 0.5);
+    this.setInteractive();
     this.add(this._button);
 
     this._label = new Phaser.GameObjects.Text(scene, 0, 0, label, { align: 'center', fontSize: '32pt', color: asset.color ?? '#000000' });
     this._label.setOrigin(0.5, 0.5);
+    this._label.setInteractive()
     this.add(this._label);
 
     this.setSize(asset.width, asset.height);

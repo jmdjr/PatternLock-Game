@@ -4,13 +4,12 @@ import Phaser, { Game } from 'phaser';
 import Path, { CountRight, PathSequence } from '../mechanics/path/path';
 import { ButtonPanel } from '../mechanics/button/buttonPanel';
 import { GameConsole } from '../services/console-ui/console-ui';
-import { VisualPathGuess } from '../mechanics/path/visualPathGuess';
 import { Inject } from '../services/di/di.system';
 import { UIBuilder } from '../mechanics/ui/uiFormatter';
 import { LabeledButton } from '../mechanics/button/labeledButton';
 import { UI_CONFIG_GAME_BOARD, UI_CONFIG_NEW_GAME_BUTTON, UI_CONFIG_PATH_GUESS_LABEL, UI_CONFIG_SHOW_SOLUTION_BUTTON, UI_CONFIG_TRIES_COLLECTION } from '../mechanics/ui/ui.config';
 import { ScrollingListBox, ScrollingListConfig } from '../mechanics/scrolling-list-box/ScrollingListBox';
-import { PathSequenceFeedbackEffect } from '../mechanics/path/PathSequenceFeedbackEffect';
+import { PathSequenceFeedbackEffect, PSFeedbackConfig } from '../mechanics/path/PathSequenceFeedbackEffect';
 
 export enum GameEvents {
   ADD_GUESS = 'addGuess',
@@ -18,13 +17,21 @@ export enum GameEvents {
   PATH_DRAWN_END = 'pathDrawnEnd',
   REPEAT_GUESS = 'repeatGuess',
   SHOW_SOLUTION = 'showSolution',
+  PAUSE_ACTION = 'pauseAction',
+  UNPAUSE_ACTION = 'unpauseAction',
 }
 
 export default class CoreScene extends Phaser.Scene {
   private panel: ButtonPanel;
-  private visualPath: VisualPathGuess;
   private solutionPath: Path;
   private psFeedback: PathSequenceFeedbackEffect;
+  private isSolved: boolean = false;
+
+  private _feedbackConfig: PSFeedbackConfig = {
+    graphicSize: 32,
+    startDelay: 300,
+    duration: 200
+  }
 
   private guessListConfig: ScrollingListConfig = {
     x: 0,
@@ -60,20 +67,29 @@ export default class CoreScene extends Phaser.Scene {
       });
     },
 
-    () => { // Create the Previous Guess List (needs new class for this)
+    () => { // Create the Previous Guess List
       this.guessList = new ScrollingListBox(this, this.guessListConfig)
         .setName(UI_CONFIG_TRIES_COLLECTION);
 
       this.add.existing(this.guessList);
       this._uiBuilder.addElement(UI_CONFIG_TRIES_COLLECTION, this.guessList.setPosition.bind(this.guessList));
-      this.events.addListener(GameEvents.ADD_GUESS, (item: PathSequence) => {
+      this.events.addListener(GameEvents.ADD_GUESS, async (item: PathSequence) => {
+        if(this.isSolved) return;
+
         const count = this.guessList.countItems();
         let text = `Guess #${count + 1}`;
         if (CountRight(item, this.solutionPath.get) === this.solutionPath.get.length) {
-          text += " - Correct!";
+          text = "Correct!";
+          this.isSolved = true;
         }
 
         this.guessList.addItem({ id: `${count + 1}`, text, context: item });
+
+        if (this.isSolved) {
+          this.events.emit(GameEvents.PAUSE_ACTION);
+          await new Promise(resolve => setTimeout(resolve, 2 * (this._feedbackConfig.duration + this._feedbackConfig.startDelay) * (item.length + 1)));
+          this.events.emit(GameEvents.RESET_GAME);
+        }
       });
 
       this.guessList.onItemClick((item, _) => {
@@ -88,6 +104,7 @@ export default class CoreScene extends Phaser.Scene {
     () => { // Create the path answer label
       this.solutionPath = new Path();
       this.events.addListener(GameEvents.RESET_GAME, () => {
+        this.isSolved = false;
         this.solutionPath.reset(Math.round(Math.random() * 2 + 5)); // Random length between 5 and 7
       });
     },
@@ -95,20 +112,28 @@ export default class CoreScene extends Phaser.Scene {
     () => { // Create the game button panel
       this.panel = new ButtonPanel(this, 0, 0).setName(UI_CONFIG_GAME_BOARD);
       this._uiBuilder.addElement(UI_CONFIG_GAME_BOARD, this.panel.setPosition.bind(this.panel));
-      this.visualPath = this.panel.pathVisual;
 
-      this.visualPath.addListener(GameEvents.PATH_DRAWN_END, (path: PathSequence) => {
-        if (path.length >= 2) {
+      this.panel.addListener(GameEvents.PATH_DRAWN_END, (path: PathSequence) => {
+        if (path.length > 2) {
           this.events.emit(GameEvents.ADD_GUESS, path);
         }
       });
 
+      this.events.addListener(GameEvents.PAUSE_ACTION, () => {
+        this.panel.ignoreActions = true;
+      });
+
+      this.events.addListener(GameEvents.UNPAUSE_ACTION, () => {
+        this.panel.ignoreActions = false;
+      });
+
       this.events.addListener(GameEvents.REPEAT_GUESS, (path: PathSequence) => {
-        this.visualPath.setPath(path);
+        this.panel.setPath(path);
       });
 
       this.events.addListener(GameEvents.RESET_GAME, () => {
-        this.visualPath.reset();
+        this.panel.reset();
+        this.events.emit(GameEvents.UNPAUSE_ACTION);
       });
     },
 
@@ -144,7 +169,7 @@ export default class CoreScene extends Phaser.Scene {
       this._uiBuilder.addElement(UI_CONFIG_SHOW_SOLUTION_BUTTON, showSolutionButton.setPosition.bind(showSolutionButton));
     },
 
-    () => { // Create the Guess Limit Label
+    () => { // Create the Accuracy Label
       this.accuracyLabel = this.add.text(0, 0, '', {
         fontSize: '42pt',
         color: '#ffffffff',
@@ -153,15 +178,19 @@ export default class CoreScene extends Phaser.Scene {
       this._uiBuilder.addElement(UI_CONFIG_PATH_GUESS_LABEL, this.accuracyLabel.setPosition.bind(this.accuracyLabel));
     },
 
-    () => { // Reveal Pattern Button
-      this.psFeedback = new PathSequenceFeedbackEffect(this);
+    () => { // Reveal Pattern Feedback Effect
+      this.psFeedback = new PathSequenceFeedbackEffect(this, this._feedbackConfig);
 
-      this.events.addListener(GameEvents.ADD_GUESS, (path: PathSequence) => {
-        this.psFeedback.run(this.solutionPath.get, path, this.panel.getButtonPositions());
+      this.events.addListener(GameEvents.ADD_GUESS, async (path: PathSequence) => {
+        this.events.emit(GameEvents.PAUSE_ACTION);
+        await this.psFeedback.run(this.solutionPath.get, path, this.panel.getButtonPositions());
+        this.events.emit(GameEvents.UNPAUSE_ACTION);
       });
 
-      this.events.addListener(GameEvents.REPEAT_GUESS, (path: PathSequence) => {
-        this.psFeedback.run(this.solutionPath.get, path, this.panel.getButtonPositions());
+      this.events.addListener(GameEvents.REPEAT_GUESS, async (path: PathSequence) => {
+        this.events.emit(GameEvents.PAUSE_ACTION);
+        await this.psFeedback.run(this.solutionPath.get, path, this.panel.getButtonPositions());
+        this.events.emit(GameEvents.UNPAUSE_ACTION);
       });
 
       this.events.addListener(GameEvents.RESET_GAME, () => {
@@ -180,7 +209,7 @@ export default class CoreScene extends Phaser.Scene {
   }
 
   init() {
-    this.data.set('debug', true); // Set debug mode
+    this.data.set('debug', false); // Set debug mode
   }
 
   preload() {
@@ -202,11 +231,11 @@ export default class CoreScene extends Phaser.Scene {
   }
 
   private _setAccuracyLabel() {
-    if (this.visualPath.path.length < 2) {
+    if (this.panel.visualPath.length < 2) {
       this.accuracyLabel.setText(`Accuracy\n0/${this.solutionPath.get.length}`);
       return;
     }
-    const accuracy = CountRight(this.visualPath.path, this.solutionPath.get);
+    const accuracy = CountRight(this.panel.visualPath, this.solutionPath.get);
     this.accuracyLabel.setText(`Accuracy\n${accuracy}/${this.solutionPath.get.length}`);
   }
 }

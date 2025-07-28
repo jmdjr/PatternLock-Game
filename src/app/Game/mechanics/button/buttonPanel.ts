@@ -1,7 +1,7 @@
 import { Asset, getAssetByType } from '../../assets.data';
 import Button from './button';
 import Phaser, { GameObjects } from 'phaser';
-import CoreScene from '../../scenes/core_scene';
+import CoreScene, { GameEvents } from '../../scenes/core_scene';
 import { LabeledButton } from './labeledButton';
 import { VisualPathGuess } from '../path/visualPathGuess';
 import { PathSequence } from '../path/path';
@@ -11,7 +11,18 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
   static readonly WIDTH: number = 3;
   static readonly HEIGHT: number = 3;
 
-  private visualPath: VisualPathGuess;
+  private _visualPath: VisualPathGuess;
+
+  private _ignoreActions: boolean = false;
+
+  public get ignoreActions() {
+    return this._ignoreActions;
+  }
+
+  public set ignoreActions(value: boolean) {
+    this._ignoreActions = value;
+    this._visualPath.ignoreActions = value; // Propagate to the visual path
+  }
 
   private _addButton(x: number, y: number, asset: Asset) {
     const label = this._scene.data.get("debug") ? `${x + ButtonPanel.WIDTH * y}` : ''; // Generate a label based on position
@@ -22,16 +33,21 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
     super(_scene, x, y);
     this._scene.add.existing(this);
     this.layout();
-    this.visualPath = new VisualPathGuess(this._scene, this);
+    this._visualPath = new VisualPathGuess(this._scene, this);
+
+    this._visualPath.on(GameEvents.PATH_DRAWN_END, (path: PathSequence) => {
+      this.emit(GameEvents.PATH_DRAWN_END, path);
+    });
   }
 
-  get pathVisual() {
-    return this.visualPath;
+  get visualPath() {
+    return this._visualPath.path;
   }
 
   override update(x: number, y: number) {
     super.update(x, y);
-    this.visualPath.update(x, y);
+    if(this._ignoreActions) return; // Ignore updates if ignoreActions is set
+    this._visualPath.update(x, y);
   }
 
   layout() {
@@ -85,6 +101,8 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
   private _callOnAllButtons(method: string, callback: (button: Button, index: number) => void) {
     this.getAll().forEach((button: GameObjects.GameObject, index: number) => {
       if (!(button instanceof LabeledButton)) return; // Ensure the button is of the correct type
+      if (this._ignoreActions) return; // Ignore actions if set
+
       const labeledButton = button;
       if (labeledButton.button.set[method]) {
         labeledButton.button.set[method](callback.bind(null, labeledButton.button, index));
@@ -111,6 +129,14 @@ export class ButtonPanel extends Phaser.GameObjects.Container {
         return this._callOnAllButtons('up', callback);
       }
     };
+  }
+
+  reset() {
+    this._visualPath.reset();
+  }
+
+  setPath(path: PathSequence) {
+    this._visualPath.setPath(path);
   }
 
   public getButtonPositions(): Phaser.Math.Vector2[] {
