@@ -26,6 +26,7 @@ export default class CoreScene extends Phaser.Scene {
   private solutionPath: Path;
   private psFeedback: PathSequenceFeedbackEffect;
   private isSolved: boolean = false;
+  private ignoreActions: boolean = false;
 
   private _feedbackConfig: PSFeedbackConfig = {
     graphicSize: 32,
@@ -84,11 +85,12 @@ export default class CoreScene extends Phaser.Scene {
         }
 
         this.guessList.addItem({ id: `${count + 1}`, text, context: item });
+        this.panel.setPath(item);
 
         if (this.isSolved) {
           this.events.emit(GameEvents.PAUSE_ACTION);
           await new Promise(resolve => setTimeout(resolve, 2 * (this._feedbackConfig.duration + this._feedbackConfig.startDelay) * (item.length + 1)));
-          this.events.emit(GameEvents.RESET_GAME);
+          this.ignoreActions = false;
         }
       });
 
@@ -120,15 +122,21 @@ export default class CoreScene extends Phaser.Scene {
       });
 
       this.events.addListener(GameEvents.PAUSE_ACTION, () => {
+        this.ignoreActions = true;
         this.panel.ignoreActions = true;
       });
 
       this.events.addListener(GameEvents.UNPAUSE_ACTION, () => {
+        this.ignoreActions = false;
         this.panel.ignoreActions = false;
       });
 
       this.events.addListener(GameEvents.REPEAT_GUESS, (path: PathSequence) => {
         this.panel.setPath(path);
+      });
+
+      this.events.addListener(GameEvents.SHOW_SOLUTION, () => {
+        this.events.emit(GameEvents.ADD_GUESS, this.solutionPath.get);
       });
 
       this.events.addListener(GameEvents.RESET_GAME, () => {
@@ -142,6 +150,7 @@ export default class CoreScene extends Phaser.Scene {
         .setName(UI_CONFIG_NEW_GAME_BUTTON);
       newGameButton.set
         .down((button) => {
+          if (this.ignoreActions) return;
           this.events.emit(GameEvents.RESET_GAME);
           button.setTint(0x00FF00);
         })
@@ -184,13 +193,23 @@ export default class CoreScene extends Phaser.Scene {
       this.events.addListener(GameEvents.ADD_GUESS, async (path: PathSequence) => {
         this.events.emit(GameEvents.PAUSE_ACTION);
         await this.psFeedback.run(this.solutionPath.get, path, this.panel.getButtonPositions());
-        this.events.emit(GameEvents.UNPAUSE_ACTION);
+        if (!this.isSolved) {
+          this.events.emit(GameEvents.UNPAUSE_ACTION);
+        }
+        else {
+          this.ignoreActions = false;
+        }
       });
 
       this.events.addListener(GameEvents.REPEAT_GUESS, async (path: PathSequence) => {
         this.events.emit(GameEvents.PAUSE_ACTION);
         await this.psFeedback.run(this.solutionPath.get, path, this.panel.getButtonPositions());
-        this.events.emit(GameEvents.UNPAUSE_ACTION);
+        if (!this.isSolved) {
+          this.events.emit(GameEvents.UNPAUSE_ACTION);
+        }
+        else {
+          this.ignoreActions = false;
+        }
       });
 
       this.events.addListener(GameEvents.RESET_GAME, () => {

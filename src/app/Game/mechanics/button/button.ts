@@ -16,7 +16,7 @@ export default class Button extends Phaser.GameObjects.Sprite implements IButton
     super(scene, x * asset.width, y * asset.height, asset.type);
 
     scene.add.existing(this);
-    this.setInteractive();
+    this.setInteractive(new Phaser.Geom.Circle(0, 0, asset.width / 2));
 
     this.on('pointerdown', () => this._set._down.call(this, this), this);
     this.on('pointerup', () => this._set._up.call(this, this), this);
