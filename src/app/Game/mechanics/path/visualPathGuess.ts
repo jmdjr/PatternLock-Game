@@ -10,6 +10,7 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
   private draggedGraphics?: Phaser.GameObjects.Graphics;
   private scene: Phaser.Scene;
   private panel: ButtonPanel;
+  private readonly _buttons: LabeledButton[] = [];
 
   ignoreActions: boolean = false;
 
@@ -60,6 +61,7 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
     // Listen for pointer events on each button
     this.panel.set.down((_, index: number) => {
       if (this.ignoreActions) return; // Prevent starting a new path if already drawing
+        console.log(`Button down: ${index}`);
         this.isDrawingPath = true;
         this.currentPathIndexes = [index];
         this.redrawPath();
@@ -67,20 +69,23 @@ export class VisualPathGuess extends Phaser.Events.EventEmitter {
 
     this.panel.set.over((_, index: number) => {
       if (this.ignoreActions) return; // Prevent starting a new path if already drawing
-        if (this.isDrawingPath && !this.currentPathIndexes.includes(index)) {
-          this.currentPathIndexes.push(index);
-          this.redrawPath();
-        }
-      });
+      if (this.isDrawingPath && !this.currentPathIndexes.includes(index)) {
+        console.log(`Button over: ${index}`);
+        this.currentPathIndexes.push(index);
+        this.redrawPath();
+      }
+    });
 
     this.scene.input.on('pointerup', () => {
       if (!this.isDrawingPath || this.ignoreActions) return;
+      console.log(`Pointer up`);
       this.stopDrawingPath();
     });
 
     // Listen for pointer up anywhere
-    this.panel.set.up(() => {
+    this.panel.set.up((_, index: number) => {
       if (this.ignoreActions) return;
+      console.log(`Button up: ${index}`);
       this.stopDrawingPath();
     });
   }
